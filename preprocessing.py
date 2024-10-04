@@ -56,3 +56,34 @@ def filter_eyebrows(x):
     x=savgol_filter(x, 10, polyorder=5 ,mode='nearest')
 
     return x
+
+def filter_right(x):
+    fs = 256
+    x=median(x)
+    x=butter_bandpass_filter(x, lowcut=0.5, highcut=30, fs=fs, order=2)
+    x=denoise_wavelet(x, method='BayesShrink',mode='hard',wavelet='sym9',wavelet_levels=5,rescale_sigma=True)
+    x=savgol_filter(x, 120, polyorder=3,mode='constant')
+
+    return x
+
+def filter_left(x):
+    fs = 256
+    lowcut = 0.5
+    highcut = 5
+    x=median(x)
+    x=butter_bandpass_filter(x, lowcut, highcut, fs, order=2)
+    # x=denoise_wavelet(x,method='BayesShrink',mode='soft',wavelet='sym9',wavelet_levels=5,rescale_sigma=True)
+    x=savgol_filter(x, 20, polyorder=5 ,mode='nearest')
+
+    return x
+
+def filter_both(x):
+    fs = 256
+    med_size,lowcut,highcut = 11, 3, 12
+    x=butter_bandpass_filter(x, lowcut, highcut, fs, order=3)
+    x=median(x, med_size)
+    # clean_signnal = log_compression(clean_signal)
+    # clean_signal = power_law_transform(clean_signal, 1.5)
+    x=savgol_filter(x, 10, polyorder=5 ,mode='nearest')
+
+    return x
