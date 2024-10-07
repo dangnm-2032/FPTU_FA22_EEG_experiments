@@ -23,12 +23,12 @@ label_name = ['eyebrows', 'left', 'right', 'both', 'teeth']
 trial_num = 10
 
 print(">>>>>>>>> Filtering 5 label with right filter <<<<<<<<<<<<")
-os.makedirs(r'.\pipeline_right', exist_ok=True)
+os.makedirs(r'./pipeline_right', exist_ok=True)
 for label in label_name:
-    os.makedirs(rf'.\pipeline_{main_label}\{label}', exist_ok=True)
+    os.makedirs(rf'./pipeline_{main_label}/{label}', exist_ok=True)
 
     for trial in range(1, trial_num+1):
-        raw_df = pd.read_csv(rf'.\raw_data\{label}\{label}_{trial}.csv').drop(columns=['timestamps', 'Right AUX'])
+        raw_df = pd.read_csv(rf'./raw_data/{label}/{label}_{trial}.csv').drop(columns=['timestamps', 'Right AUX'])
 
         n_timesteps = 128
         data = raw_df.to_numpy()
@@ -42,26 +42,26 @@ for label in label_name:
             input_data.append(input) 
         input_data = np.concatenate(input_data)
 
-        os.makedirs(rf'.\pipeline_{main_label}\{label}\filtered', exist_ok=True)
-        pd.DataFrame(input_data, columns=raw_df.columns).to_csv(rf'.\pipeline_{main_label}\{label}\filtered\{label}_{trial}.csv')
+        os.makedirs(rf'./pipeline_{main_label}/{label}/filtered', exist_ok=True)
+        pd.DataFrame(input_data, columns=raw_df.columns).to_csv(rf'./pipeline_{main_label}/{label}/filtered/{label}_{trial}.csv')
 print("--------------- Done ---------------\n")
 
 
 print(">>>>>>>>> Normalize 5 label with right filter <<<<<<<<<<<<")
-os.makedirs(rf'.\pipeline_{main_label}\checkpoints', exist_ok=True)
+os.makedirs(rf'./pipeline_{main_label}/checkpoints', exist_ok=True)
 dfs = []
 for label in label_name:
-    _path = rf'.\pipeline_{main_label}\{label}'
+    _path = rf'./pipeline_{main_label}/{label}'
     # os.makedirs(_path + '\normalized', exist_ok=True)
     for trial in range(1, trial_num+1):
-        df = pd.read_csv(_path + rf'\filtered\{label}_{trial}.csv').drop(columns=['Unnamed: 0'])
+        df = pd.read_csv(_path + rf'/filtered/{label}_{trial}.csv').drop(columns=['Unnamed: 0'])
         dfs.append(df)
 dfs = pd.concat(dfs)
 
 scaler = MinMaxScaler()
 scaler.fit(dfs)
 
-scaler_filename = rf".\pipeline_{main_label}\checkpoints\scaler.save"
+scaler_filename = rf"./pipeline_{main_label}/checkpoints/scaler.save"
 joblib.dump(scaler, scaler_filename) 
 print("--------------- Done ---------------\n")
 
@@ -74,24 +74,24 @@ for label in label_name:
     if label == main_label:
         for trial in range(1, trial_num + 1):
             raw_data_true[len(raw_data_true)] = [
-                rf'.\raw_data\{label}\{label}_{trial}.csv',
-                rf'.\roi_v2\{label}\{label}_{trial}.csv'
+                rf'./raw_data/{label}/{label}_{trial}.csv',
+                rf'./roi_v2/{label}/{label}_{trial}.csv'
             ]
     
     else:
         c1, c2 = np.random.choice(range(1, trial_num+1), 2)
         raw_data_false[len(raw_data_false)] = [
-            rf'.\raw_data\{label}\{label}_{c1}.csv',
-            rf'.\roi_v2\{label}\{label}_{c1}.csv'
+            rf'./raw_data/{label}/{label}_{c1}.csv',
+            rf'./roi_v2/{label}/{label}_{c1}.csv'
         ]
         raw_data_false[len(raw_data_false)] = [
-            rf'.\raw_data\{label}\{label}_{c2}.csv',
-            rf'.\roi_v2\{label}\{label}_{c2}.csv'
+            rf'./raw_data/{label}/{label}_{c2}.csv',
+            rf'./roi_v2/{label}/{label}_{c2}.csv'
         ]
 #####################################################
 
 ############# LOAD SCALER ###########################
-scaler = joblib.load(rf".\pipeline_{main_label}\checkpoints\scaler.save")
+scaler = joblib.load(rf"./pipeline_{main_label}/checkpoints/scaler.save")
 #####################################################
 
 ################### Split - filter - normalize ###################
@@ -221,10 +221,10 @@ plt.ylabel('accuracy')
 plt.xlabel('epoch')
 plt.legend(['train', 'val'], loc='upper left')
 
-os.makedirs(rf'pipeline_{main_label}\results', exist_ok=True)
-plt.savefig(rf'pipeline_{main_label}\results\training_result.jpg')
+os.makedirs(rf'pipeline_{main_label}/results', exist_ok=True)
+plt.savefig(rf'pipeline_{main_label}/results/training_result.jpg')
 
-model.save(rf'pipeline_{main_label}\checkpoints\checkpoint.keras')
+model.save(rf'pipeline_{main_label}/checkpoints/checkpoint.keras')
 
 y_pred = model.predict(test_x)
 y_true = test_y
@@ -267,16 +267,16 @@ plt.ylabel("Class")
 for (i, j), z in np.ndenumerate(result):
     plt.text(j, i, '{:0.3f}'.format(z), ha='center', va='center')
 plt.colorbar()
-plt.savefig(rf'pipeline_{main_label}\results\confussion_matrix.jpg')
+plt.savefig(rf'pipeline_{main_label}/results/confussion_matrix.jpg')
 #################################################
 print("--------------- Done ---------------\n")
 
 print(">>>>>>>>> INFERENCE OFFLINE <<<<<<<<<<<<")
-df_eyebrows = pd.read_csv(r'.\inference_data\eyebrows.csv').drop(columns=['timestamps', 'Right AUX'])
-df_left = pd.read_csv(r'.\inference_data\left.csv').drop(columns=['timestamps', 'Right AUX'])
-df_right = pd.read_csv(r'.\inference_data\right.csv').drop(columns=['timestamps', 'Right AUX'])
-df_both = pd.read_csv(r'.\inference_data\both.csv').drop(columns=['timestamps', 'Right AUX'])
-df_teeth = pd.read_csv(r'.\inference_data\teeth.csv').drop(columns=['timestamps', 'Right AUX'])
+df_eyebrows = pd.read_csv(r'./inference_data/eyebrows.csv').drop(columns=['timestamps', 'Right AUX'])
+df_left = pd.read_csv(r'./inference_data/left.csv').drop(columns=['timestamps', 'Right AUX'])
+df_right = pd.read_csv(r'./inference_data/right.csv').drop(columns=['timestamps', 'Right AUX'])
+df_both = pd.read_csv(r'./inference_data/both.csv').drop(columns=['timestamps', 'Right AUX'])
+df_teeth = pd.read_csv(r'./inference_data/teeth.csv').drop(columns=['timestamps', 'Right AUX'])
 
 data, input_data = get_input(df_eyebrows, filter_right, scaler)
 y_pred_onehot = get_output(input_data, model)
@@ -284,34 +284,34 @@ plot_data_result(
     data, 
     y_pred_onehot, 
     "Eyebrows data",
-    rf'pipeline_{main_label}\results\inference_eyebrows.jpg'
+    rf'pipeline_{main_label}/results/inference_eyebrows.jpg'
 )
 
 data, input_data = get_input(df_right, filter_right, scaler)
 y_pred_onehot = get_output(input_data, model)
 plot_data_result(
     data, y_pred_onehot, "Right data",
-    rf'pipeline_{main_label}\results\inference_right.jpg'
+    rf'pipeline_{main_label}/results/inference_right.jpg'
 )
 
 data, input_data = get_input(df_left, filter_right, scaler)
 y_pred_onehot = get_output(input_data, model)
 plot_data_result(
     data, y_pred_onehot, "Left data",
-    rf'pipeline_{main_label}\results\inference_left.jpg'
+    rf'pipeline_{main_label}/results/inference_left.jpg'
 )
 
 data, input_data = get_input(df_both, filter_right, scaler)
 y_pred_onehot = get_output(input_data, model)
 plot_data_result(
     data, y_pred_onehot, "Both data",
-    rf'pipeline_{main_label}\results\inference_both.jpg'
+    rf'pipeline_{main_label}/results/inference_both.jpg'
 )
 
 data, input_data = get_input(df_teeth, filter_right, scaler)
 y_pred_onehot = get_output(input_data, model)
 plot_data_result(
     data, y_pred_onehot, "Teeth data",
-    rf'pipeline_{main_label}\results\inference_teeth.jpg'
+    rf'pipeline_{main_label}/results/inference_teeth.jpg'
 )
 print("--------------- Done ---------------\n")
