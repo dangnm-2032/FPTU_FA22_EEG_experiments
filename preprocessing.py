@@ -39,8 +39,10 @@ def Implement_Notch_Filter(time, band, freq, ripple, order, filter_type, data):
 
 def filter_teeth(x):
     fs = 256
-    lowcut = 20
-    highcut = 49
+    # lowcut = 20
+    # highcut = 49
+    lowcut = 0.20 * 128
+    highcut = 0.30 *128
     x=butter_bandpass_filter(x, lowcut, highcut, fs, order=3)
     x=median(x, 9)
     x=savgol_filter(x, 10, polyorder=5 ,mode='nearest')
@@ -54,6 +56,11 @@ def filter_eyebrows(x):
     x=butter_bandpass_filter(x, lowcut, highcut, fs, order=3)
     x=median(x, 5)
     x=savgol_filter(x, 10, polyorder=5 ,mode='nearest')
+    # fs = 256
+    # lowcut = 128 * 0.15
+    # highcut = 128 * 0.30
+    # x=butter_bandpass_filter(x, lowcut, highcut, fs, order=13)
+    # x=median(x, 5)
 
     return x
 
@@ -77,13 +84,11 @@ def filter_left(x):
 
     return x
 
-def filter_both(x):
+def filter_both(x,param=[11,3,12]):
     fs = 256
-    med_size,lowcut,highcut = 11, 3, 12
+    med_size,lowcut,highcut = param[0],param[1],param[2]
     x=butter_bandpass_filter(x, lowcut, highcut, fs, order=3)
     x=median(x, med_size)
-    # clean_signnal = log_compression(clean_signal)
-    # clean_signal = power_law_transform(clean_signal, 1.5)
     x=savgol_filter(x, 10, polyorder=5 ,mode='nearest')
 
     return x
