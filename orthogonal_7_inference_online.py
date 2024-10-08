@@ -34,7 +34,7 @@ def pipeline(x, filter, scaler):
 
 
 ##################### MODEL ###############################################
-model = load_model(r'.\checkpoints\orthogonal_1.keras')
+model = load_model(r'.\checkpoints\orthogonal_2.keras')
 ###########################################################################
 
 
@@ -77,7 +77,7 @@ while True:
     x_left = pipeline(eeg_data, filters['left'], scalers['left'])
     x_right = pipeline(eeg_data, filters['right'], scalers['right'])
     x_both = pipeline(eeg_data, filters['both'], scalers['both'])
-    x_teeth = pipeline(eeg_data, filters['teeth'], scalers['teeth'])
+    x_teeth = pipeline(eeg_data[:, [0, 3]], filters['teeth'], scalers['teeth'])
     x = np.concatenate(
         [
             x_eyebrows,
@@ -94,7 +94,7 @@ while True:
     input = np.expand_dims(input, -1)
     input = input.transpose(0, 2, 1, 3)
     # print(input.shape)
-    assert input.shape == (1, 20, 128, 1)
+    assert input.shape == (1, 18, 128, 1)
     #############################################################################
 
 
