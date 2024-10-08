@@ -34,7 +34,7 @@ def pipeline(x, filter, scaler):
 
 
 ##################### MODEL ###############################################
-model = load_model(r'.\checkpoints\orthogonal_2.keras')
+model = load_model(r'.\checkpoints\orthogonal_1.keras')
 ###########################################################################
 
 
