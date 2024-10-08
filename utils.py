@@ -18,7 +18,7 @@ def process_raw_record(args):
     return input_data, label
 
 
-def process_raw_record_20_features(raw_data):
+def process_raw_record_20_features(raw_data, drop_cols=[]):
     input_data = []
     label = []
 
@@ -27,7 +27,7 @@ def process_raw_record_20_features(raw_data):
         input_path = raw_data[data][0]
         label_path = raw_data[data][1]
 
-        input_df = pd.read_csv(input_path).drop(columns=['timestamps', 'Right AUX'])
+        input_df = pd.read_csv(input_path).drop(columns=['timestamps', 'Right AUX', ]  + drop_cols)
         _input_data = input_df.to_numpy()
 
         label_df = pd.read_csv(label_path).to_numpy()
@@ -77,7 +77,7 @@ def create_dataset_20_features(x, y, filter, scalers, time_step=128, epsilon=0):
             x_left = pipeline(x, filter['left'], scalers['left'], i, time_step)
             x_right = pipeline(x, filter['right'], scalers['right'], i, time_step)
             x_both = pipeline(x, filter['both'], scalers['both'], i, time_step)
-            x_teeth = pipeline(x, filter['teeth'], scalers['teeth'], i, time_step)
+            x_teeth = pipeline(x[:, [0, 3]], filter['teeth'], scalers['teeth'], i, time_step)
             x_new.append(
                 np.concatenate(
                     [

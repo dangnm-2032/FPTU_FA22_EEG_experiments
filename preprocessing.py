@@ -38,14 +38,8 @@ def Implement_Notch_Filter(time, band, freq, ripple, order, filter_type, data):
     return filtered_data
 
 def filter_teeth(x):
-    fs = 256
-    # lowcut = 20
-    # highcut = 49
-    lowcut = 0.20 * 128
-    highcut = 0.30 *128
-    x=butter_bandpass_filter(x, lowcut, highcut, fs, order=3)
-    x=median(x, 9)
-    x=savgol_filter(x, 10, polyorder=5 ,mode='nearest')
+    x=median(x)
+    x=savgol_filter(x, 30, polyorder=5 ,mode='nearest')
 
     return x
 
