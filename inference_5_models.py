@@ -5,6 +5,8 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import pickle
 
+import time
+
 from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.layers import Dense, Activation, Permute, Dropout, Reshape
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, AveragePooling2D
@@ -60,6 +62,7 @@ for label in label_name:
 
 
 ##################### MODEL ###############################################
+models = {}
 for label in label_name:
     models[label] = load_model(rf'.\pipeline_{label}\checkpoints\checkpoint.keras')
 ###########################################################################
@@ -87,51 +90,102 @@ eeg_time_correction = inlet.time_correction()
 
 n_timesteps = 128
 
-while True:
-    # inlet.pull_chunk(timeout=1.0, max_samples=128)
-    eeg_data, timestamp = inlet.pull_chunk(timeout=1.0, max_samples=n_timesteps)
-    eeg_data = np.array(eeg_data)[:, :-1]  # sample, channel
+record_data = []
 
-    ########################### Preprocessing ###################################
-    x_eyebrows = pipeline(eeg_data, filters['eyebrows'], scalers['eyebrows'])
-    x_left = pipeline(eeg_data, filters['left'], scalers['left'])
-    x_right = pipeline(eeg_data, filters['right'], scalers['right'])
-    x_both = pipeline(eeg_data, filters['both'], scalers['both'])
-    x_teeth = pipeline(eeg_data[:, [0, 3]], filters['teeth'], scalers['teeth'])
-    x = np.concatenate(
-        [
-            x_eyebrows,
-            x_left,
-            x_right,
-            x_both,
-            x_teeth
-        ],
-        axis=1
-    )
-    
-    input = np.concatenate([x], axis=1)
-    input = np.expand_dims(input, 0)
-    input = np.expand_dims(input, -1)
-    input = input.transpose(0, 2, 1, 3)
-    # print(input.shape)
-    assert input.shape == (1, 18, 128, 1)
-    #############################################################################
+try:
+    while True:
+        # inlet.pull_chunk(timeout=1.0, max_samples=128)
+        eeg_data, timestamp = inlet.pull_chunk(timeout=1.0, max_samples=n_timesteps)
+        eeg_data = np.array(eeg_data)[:, :-1]  # sample, channel
+
+        ########################### Preprocessing ###################################
+        x_eyebrows = pipeline(eeg_data, filters['eyebrows'], scalers['eyebrows'])
+        x_left = pipeline(eeg_data, filters['left'], scalers['left'])
+        x_right = pipeline(eeg_data, filters['right'], scalers['right'])
+        x_both = pipeline(eeg_data, filters['both'], scalers['both'])
+        x_teeth = pipeline(eeg_data[:, [0, 3]], filters['teeth'], scalers['teeth'])
+        x = np.concatenate(
+            [
+                x_eyebrows,
+                x_left,
+                x_right,
+                x_both,
+                x_teeth
+            ],
+            axis=1
+        )
+        
+        input = np.concatenate([x], axis=1)
+        input = np.expand_dims(input, 0)
+        input = np.expand_dims(input, -1)
+        input = input.transpose(0, 2, 1, 3)
+        # print(input.shape)
+        assert input.shape == (1, 18, 128, 1)
+        #############################################################################
 
 
-    ############################### Inference ###################################
-    pred_eyebrows = models['eyebrows'].predict(input[:, :4])[0, :, 1]
-    pred_left = models['left'].predict(input[:, 4:8])[0, :, 1]
-    pred_right = models['right'].predict(input[:, 8:12])[0, :, 1]
-    pred_both = models['both'].predict(input[:, 12:16])[0, :, 1]
-    pred_teeth = models['teeth'].predict(input[:, 16:20])[0, :, 1]
+        ############################### Inference ###################################
+        pred_eyebrows = models['eyebrows'].predict(input[:, :4])[0, :, 1]
+        pred_left = models['left'].predict(input[:, 4:8])[0, :, 1]
+        pred_right = models['right'].predict(input[:, 8:12])[0, :, 1]
+        pred_both = models['both'].predict(input[:, 12:16])[0, :, 1]
+        pred_teeth = models['teeth'].predict(input[:, 16:20])[0, :, 1]
 
-    #############################################################################
-    
-    line_eyebrows.set_ydata(pred_eyebrows)
-    line_left.set_ydata(pred_left)
-    line_right.set_ydata(pred_right)
-    line_both.set_ydata(pred_both)
-    line_teeth.set_ydata(pred_teeth)
+        #############################################################################
+        
+        line_eyebrows.set_ydata(pred_eyebrows)
+        line_left.set_ydata(pred_left)
+        line_right.set_ydata(pred_right)
+        line_both.set_ydata(pred_both)
+        line_teeth.set_ydata(pred_teeth)
 
-    fig.canvas.draw() 
-    fig.canvas.flush_events()
+        record_data.append(
+            np.concatenate(
+                [
+                    eeg_data,
+                    x,
+                    pred_eyebrows[:, np.newaxis],
+                    pred_left[:, np.newaxis],
+                    pred_right[:, np.newaxis],
+                    pred_both[:, np.newaxis],
+                    pred_teeth[:, np.newaxis]
+                ],
+                axis=1
+            )
+        )
+
+        fig.canvas.draw() 
+        fig.canvas.flush_events()
+except KeyboardInterrupt:
+    df = pd.DataFrame(
+        record_data, 
+        columns=[
+            'Raw TP9',
+            'Raw AF7',
+            'Raw AF8',
+            'Raw TP10',
+            'Eyebrows TP9',
+            'Eyebrows AF7',
+            'Eyebrows AF8',
+            'Eyebrows TP10',
+            'Left TP9',
+            'Left AF7',
+            'Left AF8',
+            'Left TP10',
+            'Right TP9',
+            'Right AF7',
+            'Right AF8',
+            'Right TP10',
+            'Both TP9',
+            'Both AF7',
+            'Both AF8',
+            'Both TP10',
+            'Teeth TP9',
+            'Teeth TP10',
+            'Predict Eyebrows',
+            'Predict Left',
+            'Predict Right',
+            'Predict Both',
+            'Predict Teeth',
+        ])
+    df.to_csv(f'Inference_Record_{int(time.time())}.csv')
