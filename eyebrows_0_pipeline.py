@@ -94,13 +94,14 @@ for label in label_name:
 scaler = joblib.load(rf"./pipeline_{main_label}/checkpoints/scaler.save")
 #####################################################
 
+epsilon = 0
 ################### Split - filter - normalize ###################
 dataset_true = {}
 for label_ in raw_data_true:
     data, label = process_raw_record(raw_data_true[label_])
 
     dataset_true[label_] = {}
-    temp_data, temp_label = create_dataset(data, label, filter_eyebrows, scaler)
+    temp_data, temp_label = create_dataset(data, label, filter_eyebrows, scaler, epsilon=epsilon)
     print(temp_data.shape, temp_label.shape)
     temp_data, temp_label = unison_shuffled_copies(temp_data, temp_label)
     train_idx = int(temp_data.shape[0] * 0.8)
@@ -123,7 +124,7 @@ for label_ in raw_data_false:
     data, label = process_raw_record(raw_data_false[label_])
 
     dataset_false[label_] = {}
-    temp_data, temp_label = create_dataset(data, label, filter_eyebrows, scaler, epsilon=0.2)
+    temp_data, temp_label = create_dataset(data, label, filter_eyebrows, scaler, epsilon=epsilon)
     temp_label[temp_label == 1] = 0
     temp_data, temp_label = unison_shuffled_copies(temp_data, temp_label)
     train_idx = int(temp_data.shape[0] * 0.8)

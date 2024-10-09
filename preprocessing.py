@@ -72,11 +72,11 @@ def filter_left(x):
 
     return x
 
-def filter_both(x,param=[11,3,12]):
+def filter_both(x):
     fs = 256
-    med_size,lowcut,highcut = param[0],param[1],param[2]
+    med_size,lowcut,highcut = 11,3,12
     x=butter_bandpass_filter(x, lowcut, highcut, fs, order=3)
     x=median(x, med_size)
-    x=savgol_filter(x, 10, polyorder=5 ,mode='nearest')
+    x=savgol_filter(x, 10, polyorder=4 ,mode='nearest')
 
     return x
