@@ -122,10 +122,11 @@ def get_input(df, filter, scaler):
 
 def get_output(input_data, model):
     y_pred = model.predict(input_data)
-    y_pred = np.argmax(y_pred, axis=2)
+    # y_pred = np.argmax(y_pred, axis=2)
     y_pred = np.concatenate(y_pred, axis=0)
-    y_pred_onehot = np.zeros((y_pred.size, 2))
-    y_pred_onehot[np.arange(y_pred.size), y_pred] = 1
+    # y_pred_onehot = np.zeros((y_pred.size, 2))
+    # y_pred_onehot[np.arange(y_pred.size), y_pred] = 1
+    y_pred_onehot = y_pred
 
     return y_pred_onehot
 
@@ -145,5 +146,6 @@ def plot_data_result(data, y_pred_onehot, title, path):
     plt.plot(data[:, 3])
     plt.subplot(6, 1, 5)
     plt.title("Result", fontsize=40)
+    plt.ylim(0, 1)
     plt.plot(y_pred_onehot[:, 1])
     plt.savefig(path)

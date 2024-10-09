@@ -123,7 +123,7 @@ for label_ in raw_data_false:
     data, label = process_raw_record(raw_data_false[label_])
 
     dataset_false[label_] = {}
-    temp_data, temp_label = create_dataset(data, label, filter_eyebrows, scaler, epsilon=0.1)
+    temp_data, temp_label = create_dataset(data, label, filter_eyebrows, scaler, epsilon=0.2)
     temp_label[temp_label == 1] = 0
     temp_data, temp_label = unison_shuffled_copies(temp_data, temp_label)
     train_idx = int(temp_data.shape[0] * 0.8)
@@ -198,7 +198,7 @@ model.compile(
 history = model.fit(
     train_x, 
     train_y,
-    epochs=50,
+    epochs=20,
     validation_data=(test_x, test_y),
 )
 #################################################
