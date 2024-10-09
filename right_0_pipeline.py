@@ -94,7 +94,7 @@ for label in label_name:
 scaler = joblib.load(rf"./pipeline_{main_label}/checkpoints/scaler.save")
 #####################################################
 
-epsilon = 0
+epsilon = 0.2
 ################### Split - filter - normalize ###################
 dataset_true = {}
 for label_ in raw_data_true:

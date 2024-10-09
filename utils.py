@@ -77,7 +77,7 @@ def create_dataset_20_features(x, y, filter, scalers, time_step=128, epsilon=0):
             x_left = pipeline(x, filter['left'], scalers['left'], i, time_step)
             x_right = pipeline(x, filter['right'], scalers['right'], i, time_step)
             x_both = pipeline(x, filter['both'], scalers['both'], i, time_step)
-            x_teeth = pipeline(x[:, [0, 3]], filter['teeth'], scalers['teeth'], i, time_step)
+            x_teeth = pipeline(x, filter['teeth'], scalers['teeth'], i, time_step)
             x_new.append(
                 np.concatenate(
                     [
