@@ -106,11 +106,10 @@ def get_input(df, filter, scaler):
     input_data = []
     for i in range(0, data.shape[0] // n_timesteps * n_timesteps, n_timesteps):
         
-        x_eyebrows = pipeline(data, filter, scaler, i, n_timesteps)
+        x = pipeline(data, filter, scaler, i, n_timesteps)
 
         input = np.concatenate([
-            # x_left, x_right, x_both, x_teeth, 
-            x_eyebrows
+            x
         ], axis=1)
         input_data.append(input)    
 
@@ -118,14 +117,15 @@ def get_input(df, filter, scaler):
     input_data = input_data[:, :, :, np.newaxis]
     input_data = input_data.transpose(0, 2, 1, 3)
     print(input_data.shape)
+
+    data = input_data[:, :, :, 0].transpose(0, 2, 1)
+    data = np.concatenate(data, axis=0)
+    print(data.shape)
     return data, input_data
 
 def get_output(input_data, model):
     y_pred = model.predict(input_data)
-    # y_pred = np.argmax(y_pred, axis=2)
     y_pred = np.concatenate(y_pred, axis=0)
-    # y_pred_onehot = np.zeros((y_pred.size, 2))
-    # y_pred_onehot[np.arange(y_pred.size), y_pred] = 1
     y_pred_onehot = y_pred
 
     return y_pred_onehot
