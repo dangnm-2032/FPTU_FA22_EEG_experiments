@@ -23,6 +23,29 @@ from preprocessing import *
 import warnings
 warnings.filterwarnings("ignore")
 
+############# PREDICTION RESULT PLOT #############################
+plt.ion()
+fig = plt.figure(figsize=(10, 8))
+
+plot_eyebrows = fig.add_subplot(511)
+plot_left = fig.add_subplot(512)
+plot_right = fig.add_subplot(513)
+plot_both = fig.add_subplot(514)
+plot_teeth = fig.add_subplot(515)
+
+plot_eyebrows.set_title("Eyebrows")
+plot_left.set_title("Left")
+plot_right.set_title("Right")
+plot_both.set_title("Both")
+plot_teeth.set_title("Teeth")
+
+line_eyebrows, = plot_eyebrows.plot(list(range(128)), [0, 1,] * 64)
+line_left, = plot_left.plot(list(range(128)), [0, 1,] * 64)
+line_right, = plot_right.plot(list(range(128)), [0, 1,] * 64)
+line_both, = plot_both.plot(list(range(128)), [0, 1,] * 64)
+line_teeth, = plot_teeth.plot(list(range(128)), [0, 1,] * 64)
+##################################################################
+
 
 def pipeline(x, filter, scaler):
     x_new = x.copy()
@@ -34,7 +57,7 @@ def pipeline(x, filter, scaler):
 
 
 ##################### MODEL ###############################################
-model = load_model(r'.\checkpoints\orthogonal_1.keras')
+model = load_model(r'.\checkpoints\orthogonal_2.keras')
 ###########################################################################
 
 
@@ -106,21 +129,15 @@ while True:
         input[:, 12:16],
         input[:, 16:20]
     ])
-    y_pred = np.argmax(y_pred, 2)[0]
+    # y_pred = np.argmax(y_pred, 2)[0]
     #############################################################################
-    print(y_pred)
+    print(y_pred.shape)
     
+    line_eyebrows.set_ydata(y_pred[0, :, 1])
+    line_left.set_ydata(y_pred[0, :, 2])
+    line_right.set_ydata(y_pred[0, :, 3])
+    line_both.set_ydata(y_pred[0, :, 4])
+    line_teeth.set_ydata(y_pred[0, :, 5])
 
-    # 1 eyebrows 2 teeth 3 right
-    # pred = np.max(y_pred)
-    # print(pred)
-
-    # if pred == 1:
-    #     print('Left')
-    #     ser.write(bytes('3', 'ascii'))
-    # elif pred == 2:
-    #     print('Right')
-    #     ser.write(bytes('4', 'ascii'))
-    # elif pred == 0:
-    #     print('Stop')
-    #     ser.write(bytes('0', 'ascii'))
+    fig.canvas.draw()
+    fig.canvas.flush_events()

@@ -35,6 +35,12 @@ plot_right = fig.add_subplot(513)
 plot_both = fig.add_subplot(514) 
 plot_teeth = fig.add_subplot(515) 
 
+plot_eyebrows.set_title("Eyebrows")
+plot_left.set_title("Left")
+plot_right.set_title("Right")
+plot_both.set_title("Both")
+plot_teeth.set_title("Teeth")
+
 line_eyebrows, = plot_eyebrows.plot(list(range(128)), [0, 1] * 64)
 line_left, = plot_left.plot(list(range(128)), [0, 1] * 64)
 line_right, = plot_right.plot(list(range(128)), [0, 1] * 64)
@@ -158,7 +164,7 @@ try:
         fig.canvas.flush_events()
 except KeyboardInterrupt:
     df = pd.DataFrame(
-        record_data, 
+        np.concatenate(record_data, axis=0), 
         columns=[
             'Raw TP9',
             'Raw AF7',
