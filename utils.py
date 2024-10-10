@@ -45,7 +45,11 @@ def process_raw_record_20_features(raw_data, drop_cols=[]):
     return input_data, label
 
 
-def pipeline(x, filter, scaler, i, time_step):
+def pipeline(x, filter, scaler, i=None, time_step=None):
+    if i is None:
+        i = 0
+    if time_step is None:
+        time_step = x.shape[0]
     x_new = x[i:i+time_step].copy()
     for col in range(x_new.shape[1]):
         x_new[:, col] = filter(x_new[:, col])
