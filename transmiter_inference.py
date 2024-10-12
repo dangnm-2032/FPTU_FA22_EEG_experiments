@@ -121,8 +121,8 @@ while True:
     pred = np.argmax(count)
 
     if pred == 1:
-        print('Eyebrows - Go forward')
-        ser.write(bytes('1', 'ascii'))
+        print('Eyebrows - Go backward')
+        ser.write(bytes('2', 'ascii'))
     elif pred == 2:
         print('Left - Turn left')
         ser.write(bytes('5', 'ascii'))
@@ -133,5 +133,5 @@ while True:
         print('Both - Stop')
         ser.write(bytes('0', 'ascii'))
     elif pred == 5:
-        print('Teeth - Go backward')
-        ser.write(bytes('2', 'ascii'))
+        print('Teeth - Go forward')
+        ser.write(bytes('1', 'ascii'))

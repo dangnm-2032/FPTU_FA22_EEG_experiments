@@ -27,23 +27,24 @@ os.makedirs(r'./pipeline_both', exist_ok=True)
 for label in label_name:
     os.makedirs(rf'./pipeline_{main_label}/{label}', exist_ok=True)
 
-    for trial in range(1, trial_num+1):
-        raw_df = pd.read_csv(rf'./raw_data/{label}/{label}_{trial}.csv').drop(columns=['timestamps', 'Right AUX'])
+    for position in range(3):
+        for trial in range(0, trial_num):
+            raw_df = pd.read_csv(rf'./raw_data_v2/{label}/{position}_{trial}.csv').drop(columns=['timestamps', 'Right AUX'])
 
-        n_timesteps = 128
-        data = raw_df.to_numpy()
-        input_data = []
-        for i in range(0, data.shape[0] // n_timesteps * n_timesteps, n_timesteps):
-            input = data[i:i+n_timesteps].copy()
-            for column in range(input.shape[1]):
-                x=np.array(input[:, column]) 
-                x = filter_both(x)
-                input[:, column] = x
-            input_data.append(input) 
-        input_data = np.concatenate(input_data)
+            n_timesteps = 128
+            data = raw_df.to_numpy()
+            input_data = []
+            for i in range(0, data.shape[0] // n_timesteps * n_timesteps, n_timesteps):
+                input = data[i:i+n_timesteps].copy()
+                for column in range(input.shape[1]):
+                    x=np.array(input[:, column]) 
+                    x = filter_both(x)
+                    input[:, column] = x
+                input_data.append(input) 
+            input_data = np.concatenate(input_data)
 
-        os.makedirs(rf'./pipeline_{main_label}/{label}/filtered', exist_ok=True)
-        pd.DataFrame(input_data, columns=raw_df.columns).to_csv(rf'./pipeline_{main_label}/{label}/filtered/{label}_{trial}.csv')
+            os.makedirs(rf'./pipeline_{main_label}/filtered/{label}', exist_ok=True)
+            pd.DataFrame(input_data, columns=raw_df.columns).to_csv(rf'./pipeline_{main_label}/filtered/{label}/{position}_{trial}.csv')
 print("--------------- Done ---------------\n")
 
 
@@ -51,11 +52,12 @@ print(">>>>>>>>> Normalize 5 label with both filter <<<<<<<<<<<<")
 os.makedirs(rf'./pipeline_{main_label}/checkpoints', exist_ok=True)
 dfs = []
 for label in label_name:
-    _path = rf'./pipeline_{main_label}/{label}'
+    _path = rf'./pipeline_{main_label}/filtered'
     # os.makedirs(_path + '\normalized', exist_ok=True)
-    for trial in range(1, trial_num+1):
-        df = pd.read_csv(_path + rf'/filtered/{label}_{trial}.csv').drop(columns=['Unnamed: 0'])
-        dfs.append(df)
+    for position in range(3):
+        for trial in range(0, trial_num):
+            df = pd.read_csv(_path + rf'/{label}/{position}_{trial}.csv').drop(columns=['Unnamed: 0'])
+            dfs.append(df)
 dfs = pd.concat(dfs)
 
 scaler = MinMaxScaler()
@@ -68,26 +70,27 @@ print("--------------- Done ---------------\n")
 
 print(">>>>>>>>> Training both <<<<<<<<<<<<")
 ########### Prepare dataset #########################
-raw_data_true = {}
-raw_data_false = {}
+raw_data_v2_true = {}
+raw_data_v2_false = {}
 for label in label_name:
-    if label == main_label:
-        for trial in range(1, trial_num + 1):
-            raw_data_true[len(raw_data_true)] = [
-                rf'./raw_data/{label}/{label}_{trial}.csv',
-                rf'./roi_v2/{label}/{label}_{trial}.csv'
+    for position in range(3):
+        if label == main_label:
+            for trial in range(trial_num):
+                raw_data_v2_true[len(raw_data_v2_true)] = [
+                    rf'./raw_data_v2/{label}/{position}_{trial}.csv',
+                    rf'./roi_v2/{label}/{position}_{trial}.csv'
+                ]
+        
+        else:
+            c1, c2 = np.random.choice(range(trial_num), 2)
+            raw_data_v2_false[len(raw_data_v2_false)] = [
+                rf'./raw_data_v2/{label}/{position}_{c1}.csv',
+                rf'./roi_v2/{label}/{position}_{c1}.csv'
             ]
-    
-    else:
-        c1, c2 = np.random.choice(range(1, trial_num+1), 2)
-        raw_data_false[len(raw_data_false)] = [
-            rf'./raw_data/{label}/{label}_{c1}.csv',
-            rf'./roi_v2/{label}/{label}_{c1}.csv'
-        ]
-        raw_data_false[len(raw_data_false)] = [
-            rf'./raw_data/{label}/{label}_{c2}.csv',
-            rf'./roi_v2/{label}/{label}_{c2}.csv'
-        ]
+            raw_data_v2_false[len(raw_data_v2_false)] = [
+                rf'./raw_data_v2/{label}/{position}_{c2}.csv',
+                rf'./roi_v2/{label}/{position}_{c2}.csv'
+            ]
 #####################################################
 
 ############# LOAD SCALER ###########################
@@ -97,8 +100,8 @@ scaler = joblib.load(rf"./pipeline_{main_label}/checkpoints/scaler.save")
 epsilon = 0.2
 ################### Split - filter - normalize ###################
 dataset_true = {}
-for label_ in raw_data_true:
-    data, label = process_raw_record(raw_data_true[label_])
+for label_ in raw_data_v2_true:
+    data, label = process_raw_record(raw_data_v2_true[label_])
 
     dataset_true[label_] = {}
     temp_data, temp_label = create_dataset(data, label, filter_both, scaler, epsilon=epsilon)
@@ -120,8 +123,8 @@ for label_ in raw_data_true:
     )
 
 dataset_false = {}
-for label_ in raw_data_false:
-    data, label = process_raw_record(raw_data_false[label_])
+for label_ in raw_data_v2_false:
+    data, label = process_raw_record(raw_data_v2_false[label_])
 
     dataset_false[label_] = {}
     temp_data, temp_label = create_dataset(data, label, filter_both, scaler, epsilon=epsilon)

@@ -132,6 +132,11 @@ try:
             input[:, 12:16],
             input[:, 16:20]
         ])
+        # y_pred[:, :, 1][y_pred[:, :, 1] < 0.5] = 0 # eyebrows
+        # y_pred[:, :, 2][y_pred[:, :, 2] < 0.9] = 0 # left
+        # y_pred[:, :, 3][y_pred[:, :, 3] < 0.9] = 0 # right
+        # y_pred[:, :, 4][y_pred[:, :, 4] < 0.9] = 0 # both
+        # y_pred[:, :, 5][y_pred[:, :, 5] < 0.9] = 0 # teeth
         # y_pred = np.argmax(y_pred, 2)[0]
         #############################################################################
         print(y_pred.shape)
