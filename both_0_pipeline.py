@@ -29,7 +29,7 @@ for label in label_name:
 
     for position in range(3):
         for trial in range(0, trial_num):
-            raw_df = pd.read_csv(rf'./data/raw_data/{label}/{position}_{trial}.csv').drop(columns=['timestamps', 'Right AUX'])
+            raw_df = pd.read_csv(rf'./data/raw_data_luc/{label}/{position}_{trial}.csv').drop(columns=['timestamps', 'Right AUX'])
 
             n_timesteps = 128
             data = raw_df.to_numpy()
@@ -77,19 +77,19 @@ for label in label_name:
         if label == main_label:
             for trial in range(trial_num):
                 raw_data_true[len(raw_data_true)] = [
-                    rf'./data/raw_data/{label}/{position}_{trial}.csv',
-                    rf'./data/roi/{label}/{position}_{trial}.csv'
+                    rf'./data/raw_data_luc/{label}/{position}_{trial}.csv',
+                    rf'./data/roi_luc/{label}/{position}_{trial}.csv'
                 ]
         
         else:
             c1, c2 = np.random.choice(range(trial_num), 2)
             raw_data_false[len(raw_data_false)] = [
-                rf'./data/raw_data/{label}/{position}_{c1}.csv',
-                rf'./data/roi/{label}/{position}_{c1}.csv'
+                rf'./data/raw_data_luc/{label}/{position}_{c1}.csv',
+                rf'./data/roi_luc/{label}/{position}_{c1}.csv'
             ]
             raw_data_false[len(raw_data_false)] = [
-                rf'./data/raw_data/{label}/{position}_{c2}.csv',
-                rf'./data/roi/{label}/{position}_{c2}.csv'
+                rf'./data/raw_data_luc/{label}/{position}_{c2}.csv',
+                rf'./data/roi_luc/{label}/{position}_{c2}.csv'
             ]
 #####################################################
 
@@ -202,7 +202,7 @@ model.compile(
 history = model.fit(
     train_x, 
     train_y,
-    epochs=50,
+    epochs=20,
     validation_data=(test_x, test_y),
 )
 #################################################
@@ -276,11 +276,11 @@ plt.savefig(rf'pipeline_{main_label}/results/confussion_matrix.jpg')
 print("--------------- Done ---------------\n")
 
 print(">>>>>>>>> INFERENCE OFFLINE <<<<<<<<<<<<")
-df_eyebrows = pd.read_csv(r'./inference_data/eyebrows.csv').drop(columns=['timestamps', 'Right AUX'])
-df_left = pd.read_csv(r'./inference_data/left.csv').drop(columns=['timestamps', 'Right AUX'])
-df_right = pd.read_csv(r'./inference_data/right.csv').drop(columns=['timestamps', 'Right AUX'])
-df_both = pd.read_csv(r'./inference_data/both.csv').drop(columns=['timestamps', 'Right AUX'])
-df_teeth = pd.read_csv(r'./inference_data/teeth.csv').drop(columns=['timestamps', 'Right AUX'])
+df_eyebrows = pd.read_csv(r'./data/inference_data/eyebrows.csv').drop(columns=['timestamps', 'Right AUX'])
+df_left = pd.read_csv(r'./data/inference_data/left.csv').drop(columns=['timestamps', 'Right AUX'])
+df_right = pd.read_csv(r'./data/inference_data/right.csv').drop(columns=['timestamps', 'Right AUX'])
+df_both = pd.read_csv(r'./data/inference_data/both.csv').drop(columns=['timestamps', 'Right AUX'])
+df_teeth = pd.read_csv(r'./data/inference_data/teeth.csv').drop(columns=['timestamps', 'Right AUX'])
 
 data, input_data = get_input(df_eyebrows, filter_both, scaler)
 y_pred_onehot = get_output(input_data, model)

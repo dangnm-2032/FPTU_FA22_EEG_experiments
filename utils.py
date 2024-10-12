@@ -13,7 +13,7 @@ def process_raw_record(args):
     label = np.zeros(len(input_data))
     
     for row in label_df:
-        label[row[0]:row[1]] = row[2]
+        label[int(row[0]):int(row[1])] = int(row[2])
 
     return input_data, label
 
