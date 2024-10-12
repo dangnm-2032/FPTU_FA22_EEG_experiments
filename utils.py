@@ -34,7 +34,7 @@ def process_raw_record_20_features(raw_data, drop_cols=[]):
         _label = np.zeros(len(_input_data))
         
         for row in label_df:
-            _label[row[0]:row[1]] = row[2]
+            _label[int(row[0]):int(row[1])] = int(row[2])
 
         input_data.append(_input_data)
         label.append(_label)
