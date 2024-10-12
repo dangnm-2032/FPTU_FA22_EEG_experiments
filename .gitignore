@@ -162,3 +162,4 @@ cython_debug/
 #.idea/
 
 thesis/
+raw_data_v2/

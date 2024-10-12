@@ -29,7 +29,7 @@ for label in label_name:
 
     for position in range(3):
         for trial in range(0, trial_num):
-            raw_df = pd.read_csv(rf'./raw_data_v2/{label}/{position}_{trial}.csv').drop(columns=['timestamps', 'Right AUX'])
+            raw_df = pd.read_csv(rf'./data/raw_data/{label}/{position}_{trial}.csv').drop(columns=['timestamps', 'Right AUX'])
 
             n_timesteps = 128
             data = raw_df.to_numpy()
@@ -70,26 +70,26 @@ print("--------------- Done ---------------\n")
 
 print(">>>>>>>>> Training both <<<<<<<<<<<<")
 ########### Prepare dataset #########################
-raw_data_v2_true = {}
-raw_data_v2_false = {}
+raw_data_true = {}
+raw_data_false = {}
 for label in label_name:
     for position in range(3):
         if label == main_label:
             for trial in range(trial_num):
-                raw_data_v2_true[len(raw_data_v2_true)] = [
-                    rf'./raw_data_v2/{label}/{position}_{trial}.csv',
-                    rf'./roi_v2/{label}/{position}_{trial}.csv'
+                raw_data_true[len(raw_data_true)] = [
+                    rf'./data/raw_data/{label}/{position}_{trial}.csv',
+                    rf'./data/roi/{label}/{position}_{trial}.csv'
                 ]
         
         else:
             c1, c2 = np.random.choice(range(trial_num), 2)
-            raw_data_v2_false[len(raw_data_v2_false)] = [
-                rf'./raw_data_v2/{label}/{position}_{c1}.csv',
-                rf'./roi_v2/{label}/{position}_{c1}.csv'
+            raw_data_false[len(raw_data_false)] = [
+                rf'./data/raw_data/{label}/{position}_{c1}.csv',
+                rf'./data/roi/{label}/{position}_{c1}.csv'
             ]
-            raw_data_v2_false[len(raw_data_v2_false)] = [
-                rf'./raw_data_v2/{label}/{position}_{c2}.csv',
-                rf'./roi_v2/{label}/{position}_{c2}.csv'
+            raw_data_false[len(raw_data_false)] = [
+                rf'./data/raw_data/{label}/{position}_{c2}.csv',
+                rf'./data/roi/{label}/{position}_{c2}.csv'
             ]
 #####################################################
 
@@ -100,8 +100,8 @@ scaler = joblib.load(rf"./pipeline_{main_label}/checkpoints/scaler.save")
 epsilon = 0.2
 ################### Split - filter - normalize ###################
 dataset_true = {}
-for label_ in raw_data_v2_true:
-    data, label = process_raw_record(raw_data_v2_true[label_])
+for label_ in raw_data_true:
+    data, label = process_raw_record(raw_data_true[label_])
 
     dataset_true[label_] = {}
     temp_data, temp_label = create_dataset(data, label, filter_both, scaler, epsilon=epsilon)
@@ -123,8 +123,8 @@ for label_ in raw_data_v2_true:
     )
 
 dataset_false = {}
-for label_ in raw_data_v2_false:
-    data, label = process_raw_record(raw_data_v2_false[label_])
+for label_ in raw_data_false:
+    data, label = process_raw_record(raw_data_false[label_])
 
     dataset_false[label_] = {}
     temp_data, temp_label = create_dataset(data, label, filter_both, scaler, epsilon=epsilon)
