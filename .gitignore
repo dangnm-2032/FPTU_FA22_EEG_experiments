@@ -163,3 +163,4 @@ cython_debug/
 
 thesis/
 raw_data_v2/
+train.npz
