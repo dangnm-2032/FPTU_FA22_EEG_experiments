@@ -129,15 +129,15 @@ def run_data_process(label_, num):
         test_y=temp_label[train_idx:]
     )
 
-# if __name__ == '__main__':
-#     jobs = []
-#     for num, label in enumerate(label_name):
-#         p = multiprocessing.Process(target=run_data_process, args=(label, num+1))
-#         jobs.append(p)
-#         p.start()
+if __name__ == '__main__':
+    jobs = []
+    for num, label in enumerate(label_name):
+        p = multiprocessing.Process(target=run_data_process, args=(label, num+1))
+        jobs.append(p)
+        p.start()
 
-#     for proc in jobs:
-#         proc.join()
+    for proc in jobs:
+        proc.join()
 
 
 train_x = []
@@ -169,21 +169,6 @@ print(train_x.shape, train_y.shape, test_x.shape, test_y.shape)
 train_x, train_y = unison_shuffled_copies(train_x, train_y)
 
 
-# np.savez_compressed(
-#     'train.npz', 
-#     train_x=train_x, 
-#     train_y=train_y, 
-#     test_x=test_x, 
-#     test_y=test_y
-# )
-
-
-# loaded_data = np.load('train.npz')
-# train_x = loaded_data['train_x']
-# train_y = loaded_data['train_y']
-# test_x = loaded_data['test_x']
-# test_y = loaded_data['test_y']
-
 
 history = model.fit(
     [
@@ -194,7 +179,7 @@ history = model.fit(
         train_x[:, 16:20]
     ], 
     train_y,
-    epochs=15,
+    epochs=5,
     validation_data=(
         [
             test_x[:, :4], 
