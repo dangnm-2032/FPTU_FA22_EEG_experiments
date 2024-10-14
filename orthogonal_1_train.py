@@ -101,9 +101,11 @@ filters = {
 
 
 def run_data_process(label_, num):
+    print(f'{label_} - run process raw record')
     data, label = process_raw_record_20_features(raw_data[label_])
 
-    temp_data, temp_label = create_dataset_20_features(data, label, filters, scalers, epsilon=0.3)
+    print(f'{label_} - run create dataset')
+    temp_data, temp_label = create_dataset_20_features(data, label, filters, scalers)
     print(label_, temp_data.shape, temp_label.shape)
     temp_label[temp_label == 1] = num
 
