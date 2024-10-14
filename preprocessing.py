@@ -50,18 +50,31 @@ def filter_teeth(x):
     # x=median(x)
     # x=savgol_filter(x, 30, polyorder=5 ,mode='nearest')
 
-    x = butter_bandpass_filter(x, 0.1, 5, 256, 3)
-    x = butter_bandpass_filter(x, 0.1, 5, 256, 3)
-    x = butter_bandpass_filter(x, 0.1, 5, 256, 3)
-    x = butter_bandpass_filter(x, 0.1, 5, 256, 3)
 
-    x=Implement_Notch_Filter(None, band=1, freq=4, ripple=100, order=2, filter_type='butter', data=x)
-    x=Implement_Notch_Filter(None, band=1, freq=3.6, ripple=100, order=2, filter_type='butter', data=x)
-    x=Implement_Notch_Filter(None, band=0.5, freq=0.3, ripple=100, order=2, filter_type='butter', data=x)
-    # x=Implement_Notch_Filter(None, band=0.1, freq=0.5, ripple=100, order=2, filter_type='butter', data=x)
+    # x = butter_bandpass_filter(x, 0.1, 5, 256, 3)
+    # x = butter_bandpass_filter(x, 0.1, 5, 256, 3)
+    # x = butter_bandpass_filter(x, 0.1, 5, 256, 3)
+    # x = butter_bandpass_filter(x, 0.1, 5, 256, 3)
 
-    x = savgol_filter(x, 3, 2)
-    x=denoise_wavelet(x,method='BayesShrink',mode='soft',wavelet='sym9',wavelet_levels=5,rescale_sigma=True)
+    # x=Implement_Notch_Filter(None, band=1, freq=4, ripple=100, order=2, filter_type='butter', data=x)
+    # x=Implement_Notch_Filter(None, band=1, freq=3.6, ripple=100, order=2, filter_type='butter', data=x)
+    # x=Implement_Notch_Filter(None, band=0.5, freq=0.3, ripple=100, order=2, filter_type='butter', data=x)
+    # # x=Implement_Notch_Filter(None, band=0.1, freq=0.5, ripple=100, order=2, filter_type='butter', data=x)
+
+    # x = savgol_filter(x, 3, 2)
+    # x=denoise_wavelet(x,method='BayesShrink',mode='soft',wavelet='sym9',wavelet_levels=5,rescale_sigma=True)
+
+
+    fs = 256
+    # lowcut = 20
+    # highcut = 49
+    lowcut = 0.20 * 128
+    highcut = 0.30 *128
+    x = butter_bandpass_filter(x, lowcut, highcut, fs, order=3)
+    x = median(x, 9)
+    x = savgol_filter(x, 10, polyorder=5 ,mode='nearest')
+    x = median(x)
+    x = savgol_filter(x, 30, polyorder=5 ,mode='nearest')
 
     return x
 
