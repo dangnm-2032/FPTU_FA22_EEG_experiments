@@ -25,6 +25,9 @@ import joblib
 
 import serial
 
+import warnings
+warnings.filterwarnings("ignore")
+
 # configure the serial connections (the parameters differs on the device you are connecting to)
 ser = serial.Serial(
     port='COM51',
@@ -45,7 +48,7 @@ for label in label_name:
 n_timesteps = 128
 
 ####################### MODEL ############################################
-model = load_model(r'.\checkpoints\orthogonal_false.keras')
+model = load_model(r'.\checkpoints\orthogonal.keras')
 ####################### END MODEL ########################################
 
 ####### FILTER #############################################
@@ -111,7 +114,7 @@ while True:
     ])
     y_pred = np.argmax(y_pred, 2)[0]
     #############################################################################
-    print(y_pred)
+    # print(y_pred)
     count = [0, 0, 0, 0, 0, 0]
 
     temp = np.unique(y_pred, return_counts=True)
