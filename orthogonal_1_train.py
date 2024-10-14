@@ -33,7 +33,7 @@ scalers = {}
 
 for label in label_name:
     _model = load_model(rf'./pipeline_{label}/checkpoints/checkpoint.keras')
-    _model.trainable = False
+    _model.trainable = True
     _model = Model(inputs=_model.input, outputs=_model.layers[-4].output, name=label)
     print(_model.summary())
     models.append(_model)
@@ -131,15 +131,15 @@ def run_data_process(label_, num):
         test_y=temp_label[train_idx:]
     )
 
-if __name__ == '__main__':
-    jobs = []
-    for num, label in enumerate(label_name):
-        p = multiprocessing.Process(target=run_data_process, args=(label, num+1))
-        jobs.append(p)
-        p.start()
+# if __name__ == '__main__':
+#     jobs = []
+#     for num, label in enumerate(label_name):
+#         p = multiprocessing.Process(target=run_data_process, args=(label, num+1))
+#         jobs.append(p)
+#         p.start()
 
-    for proc in jobs:
-        proc.join()
+#     for proc in jobs:
+#         proc.join()
 
 
 train_x = []
@@ -150,10 +150,12 @@ test_y = []
 for label in label_name:
     dataset = np.load(f'./running/{label}.npz')
 
-    train_x.append(dataset['train_x'])
-    train_y.append(dataset['train_y'])
-    test_x.append(dataset['test_x'])
-    test_y.append(dataset['test_y'])
+    print(dataset['train_x'].shape, dataset['train_y'].shape, dataset['test_x'].shape, dataset['test_y'].shape)
+
+    train_x.append(dataset['train_x'][:51500])
+    train_y.append(dataset['train_y'][:51500])
+    test_x.append(dataset['test_x'][:12900])
+    test_y.append(dataset['test_y'][:12900])
 
 train_x = np.concatenate(train_x)
 train_y = np.concatenate(train_y)
@@ -181,7 +183,7 @@ history = model.fit(
         train_x[:, 16:20]
     ], 
     train_y,
-    epochs=5,
+    epochs=20,
     validation_data=(
         [
             test_x[:, :4], 
