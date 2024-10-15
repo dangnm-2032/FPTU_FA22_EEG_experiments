@@ -186,8 +186,8 @@ base_model = EEGNet_SSVEP(
     D = 3, F2 = 16, dropoutType = 'Dropout'
 )
 x = base_model.layers[-3].output
-x = Dense(128*3, activation='relu')(x)
-x = Reshape((128, 3))(x)
+x = Dense(128*2, activation='relu')(x)
+x = Reshape((128, 2))(x)
 x = Activation('softmax', name = 'softmax')(x)
 model = Model(inputs=base_model.input, outputs=x)
 model.summary()
@@ -203,7 +203,7 @@ model.compile(
 history = model.fit(
     train_x, 
     train_y,
-    epochs=50,
+    epochs=20,
     validation_data=(test_x, test_y),
 )
 #################################################
@@ -236,16 +236,16 @@ y_true = test_y
 y_pred = np.argmax(y_pred, 2)
 
 
-cm_total = np.zeros((3, 3))
+cm_total = np.zeros((2, 2))
 
 for y_t, y_p in zip(y_true, y_pred):
-    cm = confusion_matrix(y_t, y_p, labels=[0, 1, 2])
+    cm = confusion_matrix(y_t, y_p, labels=[0, 1])
     cm = np.array(cm)
     cm_total = cm_total + cm
 
 
 result = []
-for cls in range(3):
+for cls in range(2):
     tp = cm_total[cls, cls]
     fn = np.sum(np.delete(cm_total[cls, :], cls))
     fp = np.sum(np.delete(cm_total[:, cls], cls))
@@ -266,7 +266,7 @@ plt.figure(figsize=(20, 10))
 plt.title("Confusion Matrix of All labels Detection Model")
 plt.matshow(result, fignum=False)
 plt.xticks([0, 1, 2, 3, 4], ['Positive Predictive\nValue (Precision)', 'True Positive\nRate (Recall)', 'F1 Score', 'Accuracy', 'True Negative\nRate (Specifity)'])
-plt.yticks([0, 1, 2], ['Noise', 'Is command', 'Not command'])
+plt.yticks([0, 1], ['Noise', 'Is command'])
 plt.xlabel("Metric")
 plt.ylabel("Class")
 for (i, j), z in np.ndenumerate(result):

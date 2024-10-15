@@ -33,7 +33,7 @@ scalers = {}
 
 for label in label_name:
     _model = load_model(rf'./pipeline_{label}/checkpoints/checkpoint.keras')
-    _model.trainable = True
+    _model.trainable = False
     _model = Model(inputs=_model.input, outputs=_model.layers[-4].output, name=label)
     print(_model.summary())
     models.append(_model)
@@ -131,15 +131,15 @@ def run_data_process(label_, num):
         test_y=temp_label[train_idx:]
     )
 
-if __name__ == '__main__':
-    jobs = []
-    for num, label in enumerate(label_name):
-        p = multiprocessing.Process(target=run_data_process, args=(label, num+1))
-        jobs.append(p)
-        p.start()
+# if __name__ == '__main__':
+#     jobs = []
+#     for num, label in enumerate(label_name):
+#         p = multiprocessing.Process(target=run_data_process, args=(label, num+1))
+#         jobs.append(p)
+#         p.start()
 
-    for proc in jobs:
-        proc.join()
+#     for proc in jobs:
+#         proc.join()
 
 
 train_x = []
