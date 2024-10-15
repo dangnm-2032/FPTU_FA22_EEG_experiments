@@ -166,5 +166,4 @@ raw_data_v2/
 train.npz
 running/
 pipeline_*/filtered/
-filter.ipynb
 test.ipynb

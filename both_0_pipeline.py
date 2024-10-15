@@ -179,10 +179,10 @@ train_x, train_y = unison_shuffled_copies(train_x, train_y)
 ####################################################################
 
 ############# MODELING ##########################
-base_model = EEGNet_SSVEP(
-    nb_classes = 1, Chans = 4, Samples = 128, 
-    dropoutRate = 0.5, kernLength = 50, F1 = 16, 
-    D = 3, F2 = 16, dropoutType = 'Dropout'
+base_model = EEGNet(
+    nb_classes=1, Chans = 4, Samples = 128, 
+    dropoutRate = 0.5, kernLength = 34, F1 = 48, 
+    D = 5, F2 = 48, norm_rate = 0.25, dropoutType = 'Dropout'
 )
 x = base_model.layers[-3].output
 x = Dense(128*2, activation='relu')(x)

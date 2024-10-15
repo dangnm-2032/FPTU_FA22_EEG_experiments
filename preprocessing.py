@@ -138,22 +138,27 @@ def filter_left(x):
     x = denoise_wavelet(x,method='BayesShrink',mode='soft',wavelet='sym9',wavelet_levels=5,rescale_sigma=True)
     return x
 
+def multiply(signal):
+    result = []
+    
+    for s in signal:
+        if s < -100:  
+            result.append(5*s)
+        elif s > 50:  #
+            result.append(-5*s)  
+        else:  
+            result.append(s) 
+    return result
+
 def filter_both(x):
-    # fs = 256
-    # med_size,lowcut,highcut = 11,3,12
-    # x=butter_bandpass_filter(x, lowcut, highcut, fs, order=3)
-    # x=median(x, med_size)
-    # x=savgol_filter(x, 10, polyorder=4 ,mode='nearest')
+    fs = 256
+    lowcut = 0.2
+    highcut = 20
+    x= multiply(x)
+    x=median(x)
+    x=butter_bandpass_filter(x, lowcut, highcut, fs, order=2)
+    x=denoise_wavelet(x, method='BayesShrink',mode='soft',wavelet='sym9',wavelet_levels=5,rescale_sigma=True)
+    x=savgol_filter(x, 200, polyorder=5,mode='constant')
 
-    x = butter_bandpass_filter(x, 0.1, 10, 256, 3)
-    x = butter_bandpass_filter(x, 0.1, 10, 256, 3)
-    x = butter_bandpass_filter(x, 0.1, 10, 256, 3)
-    x = butter_bandpass_filter(x, 0.1, 10, 256, 3)
-
-    x= Implement_Notch_Filter(None, band=10, freq=18, ripple=100, order=2, filter_type='butter', data=x)
-    x= Implement_Notch_Filter(None, band=10, freq=20, ripple=100, order=2, filter_type='butter', data=x)
-
-    x = savgol_filter(x, 3, 2)
-    x = denoise_wavelet(x,method='BayesShrink',mode='soft',wavelet='sym9',wavelet_levels=5,rescale_sigma=True)
 
     return x
