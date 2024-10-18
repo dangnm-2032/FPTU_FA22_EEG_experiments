@@ -33,7 +33,7 @@ scalers = {}
 
 for label in label_name:
     _model = load_model(rf'./pipeline_{label}/checkpoints/checkpoint.keras')
-    _model.trainable = False
+    _model.trainable = True
     _model = Model(inputs=_model.input, outputs=_model.layers[-4].output, name=label)
     print(_model.summary())
     models.append(_model)
@@ -214,7 +214,7 @@ plt.ylabel('accuracy')
 plt.xlabel('epoch')
 plt.legend(['train', 'val'], loc='upper left')
 
-plt.savefig('orthogonal_train_result.png')
+plt.savefig('orthogonal_train_result_trainable_true.png')
 
 
 y_pred = model.predict([
@@ -267,6 +267,6 @@ for (i, j), z in np.ndenumerate(result):
     plt.text(j, i, '{:0.3f}'.format(z), ha='center', va='center')
 plt.colorbar()
 
-plt.savefig('orthogonal_cm.png')
+plt.savefig('orthogonal_cm_trainable_true.png')
 
-model.save(r'./checkpoints/orthogonal.keras')
+model.save(r'./checkpoints/orthogonal_trainable_true.keras')
