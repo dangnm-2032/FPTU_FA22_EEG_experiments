@@ -167,3 +167,4 @@ train.npz
 running/
 pipeline_*/filtered/
 test.ipynb
+pipeline_*/checkpoints/*.npz

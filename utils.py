@@ -103,9 +103,8 @@ def unison_shuffled_copies(a, b):
     p = np.random.permutation(len(a))
     return a[p], b[p]
 
-def get_input(df, filter, scaler):
+def get_input(df, filter, scaler, n_timesteps = 128):
     # Split then filtered
-    n_timesteps = 128
     data = df.to_numpy()
     input_data = []
     for i in range(0, data.shape[0] // n_timesteps * n_timesteps, n_timesteps):

@@ -9,6 +9,8 @@ from sklearn.preprocessing import MinMaxScaler
 import multiprocessing
 from utils import *
 
+import tensorflow as tf
+import keras
 from tensorflow.keras.models import Model, load_model
 from tensorflow.keras.layers import Dense, Activation, Reshape, Concatenate
 
@@ -21,6 +23,9 @@ from preprocessing import *
 import warnings
 warnings.filterwarnings("ignore")
 
+n_timesteps = 64
+trainable = True
+
 label_name = [
     'eyebrows', 
     'left',
@@ -32,22 +37,48 @@ models = []
 scalers = {}
 
 for label in label_name:
-    _model = load_model(rf'./pipeline_{label}/checkpoints/checkpoint.keras')
-    _model.trainable = True
+    _model = load_model(rf'./pipeline_{label}/checkpoints/checkpoint_{n_timesteps}_timesteps.keras')
+    _model.trainable = trainable
     _model = Model(inputs=_model.input, outputs=_model.layers[-4].output, name=label)
     print(_model.summary())
     models.append(_model)
 
     scalers[label] = joblib.load(rf'./pipeline_{label}/checkpoints/scaler.save')
 
+@keras.saving.register_keras_serializable(package="my_package", name="UpdatedIoU")
+class UpdatedIoU(tf.keras.metrics.IoU):
+  def __init__(self,
+        num_classes,
+        target_class_ids,
+        name=None,
+        dtype=None,
+        ignore_class=None,
+        sparse_y_true=True,
+        sparse_y_pred=True,
+        axis=-1
+    ):
+    super(UpdatedIoU, self).__init__(
+        num_classes=num_classes,
+        target_class_ids=target_class_ids,
+        name=name,
+        dtype=dtype,
+        ignore_class=ignore_class,
+        sparse_y_true=sparse_y_true,
+        sparse_y_pred=sparse_y_pred,
+        axis=axis
+    )
+
+  def update_state(self, y_true, y_pred, sample_weight=None):
+    y_pred = tf.math.argmax(y_pred, axis=-1)
+    return super().update_state(y_true, y_pred, sample_weight)
 
 inputs = []
 input_shape = {
-    'teeth': (4, 128, 1),
-    'left': (4, 128, 1),
-    'right': (4, 128, 1),
-    'eyebrows': (4, 128, 1),
-    'both': (4, 128, 1),
+    'teeth': (4, n_timesteps, 1),
+    'left': (4, n_timesteps, 1),
+    'right': (4, n_timesteps, 1),
+    'eyebrows': (4, n_timesteps, 1),
+    'both': (4, n_timesteps, 1),
 }
 for label in label_name:
     inputs.append(
@@ -65,8 +96,8 @@ for i in range(len(label_name)):
 x = Concatenate()(outs)
 x = Dense(1024, activation='gelu')(x)
 x = Dense(512, activation='gelu')(x)
-x = Dense(128*6, activation='linear')(x)
-x = Reshape((128, 6))(x)
+x = Dense(n_timesteps*6, activation='linear')(x)
+x = Reshape((n_timesteps, 6))(x)
 x = Activation('softmax', name = 'softmax')(x)
 
 model = Model(inputs=inputs, outputs=x)
@@ -75,7 +106,7 @@ model.summary()
 model.compile(
     loss='sparse_categorical_crossentropy', 
     optimizer='adam',
-    metrics=['accuracy']
+    metrics=['sparse_categorical_accuracy', UpdatedIoU(num_classes=7, target_class_ids=[1, 2, 3, 4, 5])]
 )
 
 
@@ -105,7 +136,7 @@ def run_data_process(label_, num):
     data, label = process_raw_record_20_features(raw_data[label_])
 
     print(f'{label_} - run create dataset')
-    temp_data, temp_label = create_dataset_20_features(data, label, filters, scalers)
+    temp_data, temp_label = create_dataset_20_features(data, label, filters, scalers, time_step=n_timesteps)
     print(label_, temp_data.shape, temp_label.shape)
     temp_label[temp_label == 1] = num
 
@@ -124,7 +155,7 @@ def run_data_process(label_, num):
     )
 
     np.savez_compressed(
-        f'./running/{label_}.npz',
+        f'./running/{label_}_{n_timesteps}_timesteps.npz',
         train_x=temp_data[:train_idx], 
         train_y=temp_label[:train_idx], 
         test_x=temp_data[train_idx:], 
@@ -132,14 +163,14 @@ def run_data_process(label_, num):
     )
 
 # if __name__ == '__main__':
-#     jobs = []
-#     for num, label in enumerate(label_name):
-#         p = multiprocessing.Process(target=run_data_process, args=(label, num+1))
-#         jobs.append(p)
-#         p.start()
+#    jobs = []
+#    for num, label in enumerate(label_name):
+#        p = multiprocessing.Process(target=run_data_process, args=(label, num+1))
+#        jobs.append(p)
+#        p.start()
 
-#     for proc in jobs:
-#         proc.join()
+#    for proc in jobs:
+#        proc.join()
 
 
 train_x = []
@@ -148,7 +179,7 @@ test_x = []
 test_y = []
 
 for label in label_name:
-    dataset = np.load(f'./running/{label}.npz')
+    dataset = np.load(f'./running/{label}_{n_timesteps}_timesteps.npz')
 
     print(dataset['train_x'].shape, dataset['train_y'].shape, dataset['test_x'].shape, dataset['test_y'].shape)
 
@@ -183,7 +214,7 @@ history = model.fit(
         train_x[:, 16:20]
     ], 
     train_y,
-    epochs=20,
+    epochs=50,
     validation_data=(
         [
             test_x[:, :4], 
@@ -198,7 +229,7 @@ history = model.fit(
 
 
 plt.figure(figsize=(20, 10)).suptitle("All labels")
-plt.subplot(121)
+plt.subplot(131)
 plt.plot(history.history['loss'])
 plt.plot(history.history['val_loss'])
 plt.title('Model loss')
@@ -206,15 +237,23 @@ plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.legend(['train', 'val'], loc='upper left')
 
-plt.subplot(122)
-plt.plot(history.history['accuracy'])
-plt.plot(history.history['val_accuracy'])
+plt.subplot(132)
+plt.plot(history.history['sparse_categorical_accuracy'])
+plt.plot(history.history['val_sparse_categorical_accuracy'])
 plt.title('Model accuracy')
 plt.ylabel('accuracy')
 plt.xlabel('epoch')
 plt.legend(['train', 'val'], loc='upper left')
 
-plt.savefig('orthogonal_train_result_trainable_true.png')
+plt.subplot(133)
+plt.plot(history.history['updated_io_u'])
+plt.plot(history.history['val_updated_io_u'])
+plt.title('Model IOU')
+plt.ylabel('iou')
+plt.xlabel('epoch')
+plt.legend(['train', 'val'], loc='upper left')
+
+plt.savefig(f'orthogonal_train_result_{n_timesteps}_timesteps_trainable_{trainable}.png')
 
 
 y_pred = model.predict([
@@ -267,6 +306,6 @@ for (i, j), z in np.ndenumerate(result):
     plt.text(j, i, '{:0.3f}'.format(z), ha='center', va='center')
 plt.colorbar()
 
-plt.savefig('orthogonal_cm_trainable_true.png')
+plt.savefig(f'orthogonal_cm_{n_timesteps}_timesteps_trainable_{trainable}.png')
 
-model.save(r'./checkpoints/orthogonal_trainable_true.keras')
+model.save(rf'./checkpoints/orthogonal_{n_timesteps}_timesteps_trainable_{trainable}.keras')
