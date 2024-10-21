@@ -8,6 +8,7 @@ import joblib
 from sklearn.preprocessing import MinMaxScaler
 import multiprocessing
 from utils import *
+import json
 
 import tensorflow as tf
 import keras
@@ -23,7 +24,7 @@ from preprocessing import *
 import warnings
 warnings.filterwarnings("ignore")
 
-n_timesteps = 64
+n_timesteps = 128
 trainable = True
 
 label_name = [
@@ -69,7 +70,9 @@ class UpdatedIoU(tf.keras.metrics.IoU):
     )
 
   def update_state(self, y_true, y_pred, sample_weight=None):
+    print(y_pred.shape, y_true.shape)
     y_pred = tf.math.argmax(y_pred, axis=-1)
+    print(y_pred.shape, y_true.shape)
     return super().update_state(y_true, y_pred, sample_weight)
 
 inputs = []
@@ -106,7 +109,7 @@ model.summary()
 model.compile(
     loss='sparse_categorical_crossentropy', 
     optimizer='adam',
-    metrics=['sparse_categorical_accuracy', UpdatedIoU(num_classes=7, target_class_ids=[1, 2, 3, 4, 5])]
+    metrics=['sparse_categorical_accuracy', UpdatedIoU(num_classes=6, target_class_ids=[1, 2, 3, 4, 5])]
 )
 
 
@@ -141,8 +144,6 @@ def run_data_process(label_, num):
     temp_label[temp_label == 1] = num
 
     temp_data, temp_label = unison_shuffled_copies(temp_data, temp_label)
-    temp_data = temp_data[:103000]
-    temp_label = temp_label[:103000]
     train_idx = int(temp_data.shape[0] * 0.8)
 
     print(
@@ -172,7 +173,7 @@ def run_data_process(label_, num):
 #    for proc in jobs:
 #        proc.join()
 
-
+# exit()
 train_x = []
 train_y = []
 test_x = []
@@ -203,7 +204,7 @@ print(train_x.shape, train_y.shape, test_x.shape, test_y.shape)
 
 train_x, train_y = unison_shuffled_copies(train_x, train_y)
 
-
+# exit()
 
 history = model.fit(
     [
@@ -214,7 +215,7 @@ history = model.fit(
         train_x[:, 16:20]
     ], 
     train_y,
-    epochs=50,
+    epochs=100,
     validation_data=(
         [
             test_x[:, :4], 
@@ -254,6 +255,8 @@ plt.xlabel('epoch')
 plt.legend(['train', 'val'], loc='upper left')
 
 plt.savefig(f'orthogonal_train_result_{n_timesteps}_timesteps_trainable_{trainable}.png')
+
+json.dump(history.history, open(f'./running/orthogonal_train_history_{n_timesteps}_timesteps_trainable_{trainable}.json', 'w'))
 
 
 y_pred = model.predict([
