@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from preprocessing import *
 import os
 import joblib
-from sklearn.preprocessing import MinMaxScaler
+from sklearn.preprocessing import MinMaxScaler, StandardScaler
 from utils import *
 
 import tensorflow as tf
@@ -62,7 +62,8 @@ def run(
         nb_classes = 1, Chans = 4, 
         dropoutRate = 0.5, kernLength = 50, F1 = 16, 
         D = 3, F2 = 16, dropoutType = 'Dropout',
-        process_dataset=True
+        process_dataset=True,
+        norm_type='minmax'
     ):
     label_name = ['eyebrows', 'left', 'right', 'both', 'teeth']
     trial_num = 10
@@ -85,6 +86,7 @@ def run(
                     input_data.append(input) 
                 input_data = np.concatenate(input_data)
 
+
                 os.makedirs(rf'./pipeline_{main_label}/filtered/{label}', exist_ok=True)
                 pd.DataFrame(input_data, columns=raw_df.columns).to_csv(rf'./pipeline_{main_label}/filtered/{label}/{position}_{trial}.csv')
     print("--------------- Done ---------------\n")
@@ -101,10 +103,13 @@ def run(
                 dfs.append(df)
     dfs = pd.concat(dfs)
 
-    scaler = MinMaxScaler()
+    if norm_type == 'minmax':
+        scaler = MinMaxScaler()
+    elif norm_type == 'standard':
+        scaler = StandardScaler() 
     scaler.fit(dfs)
 
-    scaler_filename = rf"./pipeline_{main_label}/checkpoints/scaler.save"
+    scaler_filename = rf"./pipeline_{main_label}/checkpoints/scaler_{norm_type}.save"
     joblib.dump(scaler, scaler_filename) 
     print("--------------- Done ---------------\n")
 
@@ -132,7 +137,7 @@ def run(
         #####################################################
 
         ############# LOAD SCALER ###########################
-        scaler = joblib.load(rf"./pipeline_{main_label}/checkpoints/scaler.save")
+        scaler = joblib.load(rf"./pipeline_{main_label}/checkpoints/scaler_{norm_type}.save")
         #####################################################
 
         epsilon = 0.
@@ -218,14 +223,14 @@ def run(
         train_x, train_y = unison_shuffled_copies(train_x, train_y)
 
         np.savez_compressed(
-            f'./pipeline_{main_label}/checkpoints/dataset_{n_timesteps}_timesteps.npz',
+            f'./pipeline_{main_label}/checkpoints/dataset_{norm_type}_{n_timesteps}_timesteps.npz',
             train_x=train_x, 
             train_y=train_y, 
             test_x=test_x, 
             test_y=test_y
         )
     else:
-        dataset = np.load(f'./pipeline_{main_label}/checkpoints/dataset_{n_timesteps}_timesteps.npz')
+        dataset = np.load(f'./pipeline_{main_label}/checkpoints/dataset_{norm_type}_{n_timesteps}_timesteps.npz')
         train_x = dataset['train_x']
         train_y = dataset['train_y'] 
         test_x = dataset['test_x']
@@ -265,22 +270,22 @@ def run(
     #################################################
 
     ############### RESULT ##########################
-    # plt.figure(figsize=(20, 10)).suptitle("All labels")
-    # plt.subplot(131)
-    # plt.plot(history.history['loss'])
-    # plt.plot(history.history['val_loss'])
-    # plt.title('Model loss')
-    # plt.ylabel('loss')
-    # plt.xlabel('epoch')
-    # plt.legend(['train', 'val'], loc='upper left')
+    plt.figure(figsize=(20, 10)).suptitle("All labels")
+    plt.subplot(131)
+    plt.plot(history.history['loss'])
+    plt.plot(history.history['val_loss'])
+    plt.title('Model loss')
+    plt.ylabel('loss')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'val'], loc='upper left')
 
-    # plt.subplot(132)
-    # plt.plot(history.history['sparse_categorical_accuracy'])
-    # plt.plot(history.history['val_sparse_categorical_accuracy'])
-    # plt.title('Model accuracy')
-    # plt.ylabel('accuracy')
-    # plt.xlabel('epoch')
-    # plt.legend(['train', 'val'], loc='upper left')
+    plt.subplot(132)
+    plt.plot(history.history['sparse_categorical_accuracy'])
+    plt.plot(history.history['val_sparse_categorical_accuracy'])
+    plt.title('Model accuracy')
+    plt.ylabel('accuracy')
+    plt.xlabel('epoch')
+    plt.legend(['train', 'val'], loc='upper left')
 
     # plt.subplot(133)
     # plt.plot(history.history['updated_io_u'])
@@ -290,10 +295,10 @@ def run(
     # plt.xlabel('epoch')
     # plt.legend(['train', 'val'], loc='upper left')
 
-    # os.makedirs(rf'pipeline_{main_label}/results', exist_ok=True)
-    # plt.savefig(rf'pipeline_{main_label}/results/training_result_{n_timesteps}_timesteps.jpg')
+    os.makedirs(rf'pipeline_{main_label}/results', exist_ok=True)
+    plt.savefig(rf'pipeline_{main_label}/results/training_result_{norm_type}_{n_timesteps}_timesteps.jpg')
 
-    model.save(rf'pipeline_{main_label}/checkpoints/checkpoint_{n_timesteps}_timesteps.keras')
+    model.save(rf'pipeline_{main_label}/checkpoints/checkpoint_{norm_type}_{n_timesteps}_timesteps.keras')
 
     y_pred = model.predict(test_x)
     y_true = test_y
@@ -336,7 +341,7 @@ def run(
     for (i, j), z in np.ndenumerate(result):
         plt.text(j, i, '{:0.3f}'.format(z), ha='center', va='center')
     plt.colorbar()
-    plt.savefig(rf'pipeline_{main_label}/results/confussion_matrix_{n_timesteps}_timesteps.jpg')
+    plt.savefig(rf'pipeline_{main_label}/results/confussion_matrix_{norm_type}_{n_timesteps}_timesteps.jpg')
     #################################################
     print("--------------- Done ---------------\n")
 
@@ -353,40 +358,40 @@ def run(
         data, 
         y_pred_onehot, 
         "Eyebrows data",
-        rf'pipeline_{main_label}/results/inference_{n_timesteps}_timesteps_eyebrows.jpg'
+        rf'pipeline_{main_label}/results/inference_{norm_type}_{n_timesteps}_timesteps_eyebrows.jpg'
     )
 
     data, input_data = get_input(df_right, filter[main_label], scaler, n_timesteps=n_timesteps)
     y_pred_onehot = get_output(input_data, model)
     plot_data_result(
         data, y_pred_onehot, "Right data",
-        rf'pipeline_{main_label}/results/inference_{n_timesteps}_timesteps_right.jpg'
+        rf'pipeline_{main_label}/results/inference_{norm_type}_{n_timesteps}_timesteps_right.jpg'
     )
 
     data, input_data = get_input(df_left, filter[main_label], scaler, n_timesteps=n_timesteps)
     y_pred_onehot = get_output(input_data, model)
     plot_data_result(
         data, y_pred_onehot, "Left data",
-        rf'pipeline_{main_label}/results/inference_{n_timesteps}_timesteps_left.jpg'
+        rf'pipeline_{main_label}/results/inference_{norm_type}_{n_timesteps}_timesteps_left.jpg'
     )
 
     data, input_data = get_input(df_both, filter[main_label], scaler, n_timesteps=n_timesteps)
     y_pred_onehot = get_output(input_data, model)
     plot_data_result(
         data, y_pred_onehot, "Both data",
-        rf'pipeline_{main_label}/results/inference_{n_timesteps}_timesteps_both.jpg'
+        rf'pipeline_{main_label}/results/inference_{norm_type}_{n_timesteps}_timesteps_both.jpg'
     )
 
     data, input_data = get_input(df_teeth, filter[main_label], scaler, n_timesteps=n_timesteps)
     y_pred_onehot = get_output(input_data, model)
     plot_data_result(
         data, y_pred_onehot, "Teeth data",
-        rf'pipeline_{main_label}/results/inference_{n_timesteps}_timesteps_teeth.jpg'
+        rf'pipeline_{main_label}/results/inference_{norm_type}_{n_timesteps}_timesteps_teeth.jpg'
     )
     print("--------------- Done ---------------\n")
 if __name__ == '__main__':
-    run('teeth', n_timesteps=64, epochs=100,process_dataset=False)
-    # run('left', n_timesteps=64, epochs=100,process_dataset=False)
-    # run('right', n_timesteps=64, epochs=100,process_dataset=False)
-    # run('both', n_timesteps=64, epochs=100,process_dataset=False)
-    # run('eyebrows',n_timesteps=64, epochs=100,process_dataset=False,Chans = 4,dropoutRate = 0.5, kernLength = 50, F1 = 16, D = 3,F2 = 16, dropoutType = 'Dropout')
+    # run('teeth', n_timesteps=64, epochs=100,process_dataset=True, norm_type='standard')
+    # run('left', n_timesteps=64, epochs=100,process_dataset=True, norm_type='standard')
+    # run('right', n_timesteps=64, epochs=100,process_dataset=True, norm_type='standard')
+    # run('both', n_timesteps=64, epochs=100,process_dataset=True, norm_type='standard')
+    run('eyebrows',n_timesteps=64, epochs=100,process_dataset=True,Chans = 4,dropoutRate = 0.5, kernLength = 50, F1 = 16, D = 3,F2 = 16, dropoutType = 'Dropout', norm_type='standard')

@@ -24,8 +24,11 @@ from preprocessing import *
 import warnings
 warnings.filterwarnings("ignore")
 
-n_timesteps = 128
+n_timesteps = 64
 trainable = True
+norm_type = 'standard'
+preprocess_data = False
+epochs = 350
 
 label_name = [
     'eyebrows', 
@@ -38,13 +41,13 @@ models = []
 scalers = {}
 
 for label in label_name:
-    _model = load_model(rf'./pipeline_{label}/checkpoints/checkpoint_{n_timesteps}_timesteps.keras')
+    _model = load_model(rf'./pipeline_{label}/checkpoints/checkpoint_{norm_type}_{n_timesteps}_timesteps.keras')
     _model.trainable = trainable
     _model = Model(inputs=_model.input, outputs=_model.layers[-4].output, name=label)
     print(_model.summary())
     models.append(_model)
 
-    scalers[label] = joblib.load(rf'./pipeline_{label}/checkpoints/scaler.save')
+    scalers[label] = joblib.load(rf'./pipeline_{label}/checkpoints/scaler_{norm_type}.save')
 
 @keras.saving.register_keras_serializable(package="my_package", name="UpdatedIoU")
 class UpdatedIoU(tf.keras.metrics.IoU):
@@ -156,31 +159,30 @@ def run_data_process(label_, num):
     )
 
     np.savez_compressed(
-        f'./running/{label_}_{n_timesteps}_timesteps.npz',
+        f'./running/{label_}_{norm_type}_{n_timesteps}_timesteps.npz',
         train_x=temp_data[:train_idx], 
         train_y=temp_label[:train_idx], 
         test_x=temp_data[train_idx:], 
         test_y=temp_label[train_idx:]
     )
 
-# if __name__ == '__main__':
-#    jobs = []
-#    for num, label in enumerate(label_name):
-#        p = multiprocessing.Process(target=run_data_process, args=(label, num+1))
-#        jobs.append(p)
-#        p.start()
+if __name__ == '__main__' and preprocess_data:
+   jobs = []
+   for num, label in enumerate(label_name):
+       p = multiprocessing.Process(target=run_data_process, args=(label, num+1))
+       jobs.append(p)
+       p.start()
 
-#    for proc in jobs:
-#        proc.join()
+   for proc in jobs:
+       proc.join()
 
-# exit()
 train_x = []
 train_y = []
 test_x = []
 test_y = []
 
 for label in label_name:
-    dataset = np.load(f'./running/{label}_{n_timesteps}_timesteps.npz')
+    dataset = np.load(f'./running/{label}_{norm_type}_{n_timesteps}_timesteps.npz')
 
     print(dataset['train_x'].shape, dataset['train_y'].shape, dataset['test_x'].shape, dataset['test_y'].shape)
 
@@ -215,7 +217,7 @@ history = model.fit(
         train_x[:, 16:20]
     ], 
     train_y,
-    epochs=100,
+    epochs=epochs,
     validation_data=(
         [
             test_x[:, :4], 
@@ -254,9 +256,9 @@ plt.ylabel('iou')
 plt.xlabel('epoch')
 plt.legend(['train', 'val'], loc='upper left')
 
-plt.savefig(f'orthogonal_train_result_{n_timesteps}_timesteps_trainable_{trainable}.png')
+plt.savefig(f'orthogonal_train_result_{norm_type}_{n_timesteps}_timesteps_trainable_{trainable}.png')
 
-json.dump(history.history, open(f'./running/orthogonal_train_history_{n_timesteps}_timesteps_trainable_{trainable}.json', 'w'))
+json.dump(history.history, open(f'./running/orthogonal_train_history_{norm_type}_{n_timesteps}_timesteps_trainable_{trainable}.json', 'w'))
 
 
 y_pred = model.predict([
@@ -309,6 +311,6 @@ for (i, j), z in np.ndenumerate(result):
     plt.text(j, i, '{:0.3f}'.format(z), ha='center', va='center')
 plt.colorbar()
 
-plt.savefig(f'orthogonal_cm_{n_timesteps}_timesteps_trainable_{trainable}.png')
+plt.savefig(f'orthogonal_cm_{norm_type}_{n_timesteps}_timesteps_trainable_{trainable}.png')
 
-model.save(rf'./checkpoints/orthogonal_{n_timesteps}_timesteps_trainable_{trainable}.keras')
+model.save(rf'./checkpoints/orthogonal_{norm_type}_{n_timesteps}_timesteps_trainable_{trainable}.keras')
