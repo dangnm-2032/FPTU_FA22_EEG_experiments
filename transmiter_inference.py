@@ -45,10 +45,10 @@ for label in label_name:
     scalers[label] = joblib.load(rf'.\pipeline_{label}\checkpoints\scaler.save')
 ######################################################################
 
-n_timesteps = 128
+n_timesteps = 64
 
 ####################### MODEL ############################################
-model = load_model(r'.\checkpoints\orthogonal.keras')
+model = load_model(r'.\checkpoints\orthogonal_64_timesteps_trainable_False.keras')
 ####################### END MODEL ########################################
 
 ####### FILTER #############################################
@@ -68,10 +68,9 @@ streams = resolve_byprop('type', 'EEG', timeout=2)
 if len(streams) == 0:
     raise RuntimeError('Can\'t find EEG stream.')
 print("Start acquiring data")
-inlet = StreamInlet(streams[0], max_chunklen=128)
+inlet = StreamInlet(streams[0], max_chunklen=n_timesteps)
 eeg_time_correction = inlet.time_correction()
 
-n_timesteps = 128
 
 while True:
     # inlet.pull_chunk(timeout=1.0, max_samples=128)
@@ -100,7 +99,7 @@ while True:
     input = np.expand_dims(input, -1)
     input = input.transpose(0, 2, 1, 3)
     # print(input.shape)
-    assert input.shape == (1, 20, 128, 1)
+    assert input.shape == (1, 20, n_timesteps, 1)
     #############################################################################
 
 
@@ -120,7 +119,10 @@ while True:
     temp = np.unique(y_pred, return_counts=True)
     for i in range(temp[0].shape[0]):
         count[temp[0][i]] = temp[1][i]
-    count[0] = 0
+    count = np.array(count)
+    # count[0] = 0
+
+    print(count)
     pred = np.argmax(count)
 
     if pred == 1:

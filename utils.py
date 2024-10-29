@@ -1,6 +1,8 @@
 import pandas as pd
 import numpy as np
 from matplotlib import pyplot as plt
+import keras
+import tensorflow as tf
 
 def process_raw_record(args):
     input_path = args[0]
@@ -152,3 +154,31 @@ def plot_data_result(data, y_pred_onehot, title, path):
     plt.ylim(0, 1)
     plt.plot(y_pred_onehot[:, 1])
     plt.savefig(path)
+
+
+@keras.saving.register_keras_serializable(package="my_package", name="UpdatedIoU")
+class UpdatedIoU(tf.keras.metrics.IoU):
+  def __init__(self,
+        num_classes,
+        target_class_ids,
+        name=None,
+        dtype=None,
+        ignore_class=None,
+        sparse_y_true=True,
+        sparse_y_pred=True,
+        axis=-1
+    ):
+    super(UpdatedIoU, self).__init__(
+        num_classes=num_classes,
+        target_class_ids=target_class_ids,
+        name=name,
+        dtype=dtype,
+        ignore_class=ignore_class,
+        sparse_y_true=sparse_y_true,
+        sparse_y_pred=sparse_y_pred,
+        axis=axis
+    )
+
+  def update_state(self, y_true, y_pred, sample_weight=None):
+    y_pred = tf.math.argmax(y_pred, axis=-1)
+    return super().update_state(y_true, y_pred, sample_weight)

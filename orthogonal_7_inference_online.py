@@ -20,30 +20,38 @@ from models.EEGNet import *
 
 from preprocessing import *
 
+from utils import *
+
 import warnings
 warnings.filterwarnings("ignore")
 
 ############# PREDICTION RESULT PLOT #############################
 plt.ion()
+
+plot_duration = 2 # seconds
+SR = 256
+x = np.linspace(0, plot_duration, SR*plot_duration)
+
 fig = plt.figure(figsize=(10, 8))
 
-plot_eyebrows = fig.add_subplot(511)
-plot_left = fig.add_subplot(512)
-plot_right = fig.add_subplot(513)
-plot_both = fig.add_subplot(514)
-plot_teeth = fig.add_subplot(515)
+temp = int(SR * plot_duration / 2)
+max = 1
+min = 0
 
-plot_eyebrows.set_title("Eyebrows")
-plot_left.set_title("Left")
-plot_right.set_title("Right")
-plot_both.set_title("Both")
-plot_teeth.set_title("Teeth")
+line_TP9_filter, = plt.plot(x, [0, 1,]  * temp, label='TP9')
+line_AF7_filter, = plt.plot(x, [0, 1,]  * temp, label='AF7')
+line_AF8_filter, = plt.plot(x, [0, 1,]  * temp, label='AF8')
+line_TP10_filter, = plt.plot(x, [0, 1,]  * temp, label='TP10')
 
-line_eyebrows, = plot_eyebrows.plot(list(range(128)), [0, 1,] * 64)
-line_left, = plot_left.plot(list(range(128)), [0, 1,] * 64)
-line_right, = plot_right.plot(list(range(128)), [0, 1,] * 64)
-line_both, = plot_both.plot(list(range(128)), [0, 1,] * 64)
-line_teeth, = plot_teeth.plot(list(range(128)), [0, 1,] * 64)
+
+line_eyebrows, = plt.plot(x, [0, 1,] * temp, label='eyebrows')
+line_left, = plt.plot(x, [0, 1,] * temp, label='left')
+line_right, = plt.plot(x, [0, 1,] * temp, label='right')
+line_both, = plt.plot(x, [0, 1,] * temp, label='both')
+line_teeth, = plt.plot(x, [0, 1,] * temp, label='teeth')
+plt.ylim(-2, 18)
+plt.legend()
+buffer = np.zeros((SR*plot_duration, 13))
 ##################################################################
 
 
@@ -57,7 +65,8 @@ def pipeline(x, filter, scaler):
 
 
 ##################### MODEL ###############################################
-model = load_model(r'.\checkpoints\orthogonal.keras')
+n_timesteps = 64
+model = load_model(r'.\checkpoints\orthogonal_64_timesteps_trainable_True.keras')
 ###########################################################################
 
 
@@ -83,12 +92,12 @@ streams = resolve_byprop('type', 'EEG', timeout=2)
 if len(streams) == 0:
     raise RuntimeError('Can\'t find EEG stream.')
 print("Start acquiring data")
-inlet = StreamInlet(streams[0], max_chunklen=128)
+inlet = StreamInlet(streams[0], max_chunklen=n_timesteps)
 eeg_time_correction = inlet.time_correction()
 ###########################################################################
 
 
-n_timesteps = 128
+
 
 record_data = []
 
@@ -120,7 +129,7 @@ try:
         input = np.expand_dims(input, -1)
         input = input.transpose(0, 2, 1, 3)
         # print(input.shape)
-        assert input.shape == (1, 20, 128, 1)
+        assert input.shape == (1, 20, n_timesteps, 1)
         #############################################################################
 
 
@@ -132,35 +141,62 @@ try:
             input[:, 12:16],
             input[:, 16:20]
         ])
-        # y_pred[:, :, 1][y_pred[:, :, 1] < 0.5] = 0 # eyebrows
-        # y_pred[:, :, 2][y_pred[:, :, 2] < 0.9] = 0 # left
-        # y_pred[:, :, 3][y_pred[:, :, 3] < 0.9] = 0 # right
-        # y_pred[:, :, 4][y_pred[:, :, 4] < 0.9] = 0 # both
-        # y_pred[:, :, 5][y_pred[:, :, 5] < 0.9] = 0 # teeth
-        # y_pred = np.argmax(y_pred, 2)[0]
+
         #############################################################################
         print(y_pred.shape)
-        
-        line_eyebrows.set_ydata(y_pred[0, :, 1])
-        line_left.set_ydata(y_pred[0, :, 2])
-        line_right.set_ydata(y_pred[0, :, 3])
-        line_both.set_ydata(y_pred[0, :, 4])
-        line_teeth.set_ydata(y_pred[0, :, 5])
 
-        record_data.append(
-            np.concatenate(
-                [
-                    eeg_data,
-                    x,
-                    y_pred[0, :, 1][:, np.newaxis],
-                    y_pred[0, :, 2][:, np.newaxis],
-                    y_pred[0, :, 3][:, np.newaxis],
-                    y_pred[0, :, 4][:, np.newaxis],
-                    y_pred[0, :, 5][:, np.newaxis]
-                ],
-                axis=1
-            )
-        )
+        buffer[:-n_timesteps] = buffer[n_timesteps:]
+
+        # buffer[-n_timesteps:, 0] = eeg_data[:, 0] /100 + 11 # TP9
+        buffer[-n_timesteps:, 1] = input[0, 4, :, 0] * 10 + 11 # TP9 filter
+
+        # buffer[-n_timesteps:, 2] = eeg_data[:, 1] # AF7
+        buffer[-n_timesteps:, 3] = input[0, 5, :, 0] * 10 + 9 # AF7 filter
+
+        # buffer[-n_timesteps:, 4] = eeg_data[:, 2] # AF8
+        buffer[-n_timesteps:, 5] = input[0, 6, :, 0] * 10 + 7 # AF8 filter
+
+        # buffer[-n_timesteps:, 6] = eeg_data[:, 3] # TP10
+        buffer[-n_timesteps:, 7] = input[0, 7, :, 0] * 10 + 5 # TP10 filter
+
+        buffer[-n_timesteps:, 8] = y_pred[0, :, 1] + 0
+        buffer[-n_timesteps:, 9] = y_pred[0, :, 2] + 2
+        buffer[-n_timesteps:, 10] = y_pred[0, :, 3] + 4
+        buffer[-n_timesteps:, 11] = y_pred[0, :, 4] + 6
+        buffer[-n_timesteps:, 12] = y_pred[0, :, 5] + 8
+        
+        # line_TP9_raw.set_ydata(buffer[:, 0])
+        line_TP9_filter.set_ydata(buffer[:, 1])
+
+        # line_AF7_raw.set_ydata(buffer[:, 2])
+        line_AF7_filter.set_ydata(buffer[:, 3])
+
+        # line_AF8_raw.set_ydata(buffer[:, 4])
+        line_AF8_filter.set_ydata(buffer[:, 5])
+
+        # line_TP10_raw.set_ydata(buffer[:, 6])
+        line_TP10_filter.set_ydata(buffer[:, 7])
+
+        line_eyebrows.set_ydata(buffer[:, 8])
+        line_left.set_ydata(buffer[:, 9])
+        line_right.set_ydata(buffer[:, 10])
+        line_both.set_ydata(buffer[:, 11])
+        line_teeth.set_ydata(buffer[:, 12])
+
+        # record_data.append(
+        #     np.concatenate(
+        #         [
+        #             eeg_data,
+        #             x,
+        #             y_pred[0, :, 1][:, np.newaxis],
+        #             y_pred[0, :, 2][:, np.newaxis],
+        #             y_pred[0, :, 3][:, np.newaxis],
+        #             y_pred[0, :, 4][:, np.newaxis],
+        #             y_pred[0, :, 5][:, np.newaxis]
+        #         ],
+        #         axis=1
+        #     )
+        # )
 
         fig.canvas.draw()
         fig.canvas.flush_events()
