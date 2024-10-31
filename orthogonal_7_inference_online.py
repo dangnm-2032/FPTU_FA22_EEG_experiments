@@ -38,10 +38,15 @@ temp = int(SR * plot_duration / 2)
 max = 1
 min = 0
 
-line_TP9_filter, = plt.plot(x, [0, 1,]  * temp, label='TP9')
-line_AF7_filter, = plt.plot(x, [0, 1,]  * temp, label='AF7')
-line_AF8_filter, = plt.plot(x, [0, 1,]  * temp, label='AF8')
-line_TP10_filter, = plt.plot(x, [0, 1,]  * temp, label='TP10')
+line_TP9_raw, = plt.plot(x, [0, 1,]  * temp)
+line_AF7_raw, = plt.plot(x, [0, 1,]  * temp)
+line_AF8_raw, = plt.plot(x, [0, 1,]  * temp)
+line_TP10_raw, = plt.plot(x, [0, 1,]  * temp)
+
+line_TP9_filter, = plt.plot(x, [0, 1,]  * temp)
+line_AF7_filter, = plt.plot(x, [0, 1,]  * temp)
+line_AF8_filter, = plt.plot(x, [0, 1,]  * temp)
+line_TP10_filter, = plt.plot(x, [0, 1,]  * temp)
 
 
 line_eyebrows, = plt.plot(x, [0, 1,] * temp, label='eyebrows')
@@ -49,8 +54,14 @@ line_left, = plt.plot(x, [0, 1,] * temp, label='left')
 line_right, = plt.plot(x, [0, 1,] * temp, label='right')
 line_both, = plt.plot(x, [0, 1,] * temp, label='both')
 line_teeth, = plt.plot(x, [0, 1,] * temp, label='teeth')
-plt.ylim(-2, 18)
-plt.legend()
+plt.ylim(-2, 12.5)
+plt.legend(loc=1)
+plt.axis('off')
+plt.text(-0.2, -0.1, 'PREDICT')
+plt.text(-0.2, 10.8, 'TP9')
+plt.text(-0.2, 8.8, 'AF7')
+plt.text(-0.2, 6.8, 'AF8')
+plt.text(-0.2, 4.8, 'TP10')
 buffer = np.zeros((SR*plot_duration, 13))
 ##################################################################
 
@@ -147,34 +158,34 @@ try:
 
         buffer[:-n_timesteps] = buffer[n_timesteps:]
 
-        # buffer[-n_timesteps:, 0] = eeg_data[:, 0] /100 + 11 # TP9
-        buffer[-n_timesteps:, 1] = input[0, 4, :, 0] * 10 + 11 # TP9 filter
+        buffer[-n_timesteps:, 0] = eeg_data[:, 0] /200 + 11 # TP9
+        buffer[-n_timesteps:, 1] = input[0, 4, :, 0] * 10 + 5 # TP9 filter
 
-        # buffer[-n_timesteps:, 2] = eeg_data[:, 1] # AF7
-        buffer[-n_timesteps:, 3] = input[0, 5, :, 0] * 10 + 9 # AF7 filter
+        buffer[-n_timesteps:, 2] = eeg_data[:, 1] /200 + 9 # AF7
+        buffer[-n_timesteps:, 3] = input[0, 5, :, 0] * 10 + 4.5 # AF7 filter
 
-        # buffer[-n_timesteps:, 4] = eeg_data[:, 2] # AF8
-        buffer[-n_timesteps:, 5] = input[0, 6, :, 0] * 10 + 7 # AF8 filter
+        buffer[-n_timesteps:, 4] = eeg_data[:, 2] /200 + 7 # AF8
+        buffer[-n_timesteps:, 5] = input[0, 6, :, 0] * 10 + 2.8 # AF8 filter
 
-        # buffer[-n_timesteps:, 6] = eeg_data[:, 3] # TP10
-        buffer[-n_timesteps:, 7] = input[0, 7, :, 0] * 10 + 5 # TP10 filter
+        buffer[-n_timesteps:, 6] = eeg_data[:, 3] /200 + 5 # TP10
+        buffer[-n_timesteps:, 7] = input[0, 7, :, 0] * 10 - 3 # TP10 filter
 
         buffer[-n_timesteps:, 8] = y_pred[0, :, 1] + 0
-        buffer[-n_timesteps:, 9] = y_pred[0, :, 2] + 2
-        buffer[-n_timesteps:, 10] = y_pred[0, :, 3] + 4
-        buffer[-n_timesteps:, 11] = y_pred[0, :, 4] + 6
-        buffer[-n_timesteps:, 12] = y_pred[0, :, 5] + 8
+        buffer[-n_timesteps:, 9] = y_pred[0, :, 2] + 0
+        buffer[-n_timesteps:, 10] = y_pred[0, :, 3] + 0
+        buffer[-n_timesteps:, 11] = y_pred[0, :, 4] + 0
+        buffer[-n_timesteps:, 12] = y_pred[0, :, 5] + 0
         
-        # line_TP9_raw.set_ydata(buffer[:, 0])
+        line_TP9_raw.set_ydata(buffer[:, 0])
         line_TP9_filter.set_ydata(buffer[:, 1])
 
-        # line_AF7_raw.set_ydata(buffer[:, 2])
+        line_AF7_raw.set_ydata(buffer[:, 2])
         line_AF7_filter.set_ydata(buffer[:, 3])
 
-        # line_AF8_raw.set_ydata(buffer[:, 4])
+        line_AF8_raw.set_ydata(buffer[:, 4])
         line_AF8_filter.set_ydata(buffer[:, 5])
 
-        # line_TP10_raw.set_ydata(buffer[:, 6])
+        line_TP10_raw.set_ydata(buffer[:, 6])
         line_TP10_filter.set_ydata(buffer[:, 7])
 
         line_eyebrows.set_ydata(buffer[:, 8])
