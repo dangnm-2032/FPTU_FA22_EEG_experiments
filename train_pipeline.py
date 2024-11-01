@@ -393,5 +393,5 @@ if __name__ == '__main__':
     # run('teeth', n_timesteps=64, epochs=100,process_dataset=True, norm_type='standard')
     # run('left', n_timesteps=64, epochs=100,process_dataset=True, norm_type='standard')
     # run('right', n_timesteps=64, epochs=100,process_dataset=True, norm_type='standard')
-    # run('both', n_timesteps=64, epochs=100,process_dataset=True, norm_type='standard')
-    run('eyebrows',n_timesteps=64, epochs=100,process_dataset=True,Chans = 4,dropoutRate = 0.5, kernLength = 50, F1 = 16, D = 3,F2 = 16, dropoutType = 'Dropout', norm_type='standard')
+    run('both', n_timesteps=64, epochs=100,process_dataset=True, norm_type='standard')
+    # run('eyebrows',n_timesteps=64, epochs=100,process_dataset=True,Chans = 4,dropoutRate = 0.5, kernLength = 50, F1 = 16, D = 3,F2 = 16, dropoutType = 'Dropout', norm_type='standard')

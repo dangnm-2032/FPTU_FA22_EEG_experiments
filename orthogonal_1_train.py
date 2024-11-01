@@ -27,7 +27,7 @@ warnings.filterwarnings("ignore")
 n_timesteps = 64
 trainable = True
 norm_type = 'standard'
-preprocess_data = False
+preprocess_data = True
 epochs = 350
 
 label_name = [

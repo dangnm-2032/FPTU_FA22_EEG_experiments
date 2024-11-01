@@ -152,13 +152,13 @@ def multiply(signal):
 
 def filter_both(x):
     fs = 256
-    lowcut = 0.2
-    highcut = 20
-    x= multiply(x)
-    x=median(x)
+    lowcut = 1 #0.2
+    highcut = 49 #20
+    # x= multiply(x)
+    # x=median(x)
     x=butter_bandpass_filter(x, lowcut, highcut, fs, order=2)
-    x=denoise_wavelet(x, method='BayesShrink',mode='soft',wavelet='sym9',wavelet_levels=5,rescale_sigma=True)
-    x=savgol_filter(x, 200, polyorder=5,mode='constant')
+    # x=denoise_wavelet(x, method='BayesShrink',mode='soft',wavelet='sym9',wavelet_levels=5,rescale_sigma=True)
+    # x=savgol_filter(x, 200, polyorder=5,mode='constant')
 
 
     return x
