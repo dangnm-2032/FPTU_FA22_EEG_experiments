@@ -27,8 +27,8 @@ warnings.filterwarnings("ignore")
 n_timesteps = 64
 trainable = True
 norm_type = 'standard'
-preprocess_data = True
-epochs = 350
+preprocess_data = False
+epochs = 400
 
 label_name = [
     'eyebrows', 
@@ -112,7 +112,10 @@ model.summary()
 model.compile(
     loss='sparse_categorical_crossentropy', 
     optimizer='adam',
-    metrics=['sparse_categorical_accuracy', UpdatedIoU(num_classes=6, target_class_ids=[1, 2, 3, 4, 5])]
+    metrics=[
+        'sparse_categorical_accuracy', 
+        # UpdatedIoU(num_classes=7, target_class_ids=[1, 2, 3, 4, 5])
+    ]
 )
 
 
@@ -232,7 +235,7 @@ history = model.fit(
 
 
 plt.figure(figsize=(20, 10)).suptitle("All labels")
-plt.subplot(131)
+plt.subplot(121)
 plt.plot(history.history['loss'])
 plt.plot(history.history['val_loss'])
 plt.title('Model loss')
@@ -240,7 +243,7 @@ plt.ylabel('loss')
 plt.xlabel('epoch')
 plt.legend(['train', 'val'], loc='upper left')
 
-plt.subplot(132)
+plt.subplot(122)
 plt.plot(history.history['sparse_categorical_accuracy'])
 plt.plot(history.history['val_sparse_categorical_accuracy'])
 plt.title('Model accuracy')
@@ -248,13 +251,13 @@ plt.ylabel('accuracy')
 plt.xlabel('epoch')
 plt.legend(['train', 'val'], loc='upper left')
 
-plt.subplot(133)
-plt.plot(history.history['updated_io_u'])
-plt.plot(history.history['val_updated_io_u'])
-plt.title('Model IOU')
-plt.ylabel('iou')
-plt.xlabel('epoch')
-plt.legend(['train', 'val'], loc='upper left')
+# plt.subplot(133)
+# plt.plot(history.history['updated_io_u'])
+# plt.plot(history.history['val_updated_io_u'])
+# plt.title('Model IOU')
+# plt.ylabel('iou')
+# plt.xlabel('epoch')
+# plt.legend(['train', 'val'], loc='upper left')
 
 plt.savefig(f'orthogonal_train_result_{norm_type}_{n_timesteps}_timesteps_trainable_{trainable}.png')
 

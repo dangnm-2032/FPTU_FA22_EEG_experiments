@@ -47,7 +47,7 @@ from tensorflow.keras.layers import SeparableConv2D, DepthwiseConv2D
 from tensorflow.keras.layers import BatchNormalization
 from tensorflow.keras.layers import SpatialDropout2D
 from tensorflow.keras.regularizers import l1_l2
-from tensorflow.keras.layers import Input, Flatten
+from tensorflow.keras.layers import Input, Flatten, LeakyReLU
 from tensorflow.keras.constraints import max_norm
 from tensorflow.keras import backend as K
 
@@ -135,14 +135,16 @@ def EEGNet(nb_classes, Chans = 64, Samples = 128,
                                    depth_multiplier = D,
                                    depthwise_constraint = max_norm(1.))(block1)
     block1       = BatchNormalization()(block1)
-    block1       = Activation('elu')(block1)
+    block1       = Activation('gelu')(block1)
+    # block1       = Activation(LeakyReLU(negative_slope=0.01))(block1)
     block1       = AveragePooling2D((1, 4))(block1)
     block1       = dropoutType(dropoutRate)(block1)
     
     block2       = SeparableConv2D(F2, (1, 16),
                                    use_bias = False, padding = 'same')(block1)
     block2       = BatchNormalization()(block2)
-    block2       = Activation('elu')(block2)
+    block2       = Activation('gelu')(block2)
+    # block2       = Activation(LeakyReLU(negative_slope=0.01))(block2)
     block2       = AveragePooling2D((1, 8))(block2)
     block2       = dropoutType(dropoutRate)(block2)
         

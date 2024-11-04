@@ -11,7 +11,7 @@ from utils import *
 import tensorflow as tf
 import keras
 from tensorflow.keras.models import Model
-from tensorflow.keras.layers import Dense, Activation, Reshape
+from tensorflow.keras.layers import Dense, Activation, Reshape, LeakyReLU
 
 from models.EEGNet import *
 
@@ -238,13 +238,13 @@ def run(
     ####################################################################
 
     ############# MODELING ##########################
-    base_model = EEGNet_SSVEP(
+    base_model = EEGNet(
         nb_classes = nb_classes, Chans = Chans, Samples = n_timesteps, 
         dropoutRate = dropoutRate, kernLength = kernLength, F1 = F1, 
         D = D, F2 = F2, dropoutType = dropoutType
     )
     x = base_model.layers[-3].output
-    x = Dense(n_timesteps*2, activation='relu')(x)
+    x = Dense(n_timesteps*2, activation='gelu')(x)
     x = Reshape((n_timesteps, 2))(x)
     x = Activation('softmax', name = 'softmax')(x)
     model = Model(inputs=base_model.input, outputs=x)
@@ -296,7 +296,7 @@ def run(
     # plt.legend(['train', 'val'], loc='upper left')
 
     os.makedirs(rf'pipeline_{main_label}/results', exist_ok=True)
-    plt.savefig(rf'pipeline_{main_label}/results/training_result_{norm_type}_{n_timesteps}_timesteps.jpg')
+    plt.savefig(rf'pipeline_{main_label}/results/training_result_{norm_type}_{n_timesteps}_timesteps_gelu_B.jpg')
 
     model.save(rf'pipeline_{main_label}/checkpoints/checkpoint_{norm_type}_{n_timesteps}_timesteps.keras')
 
@@ -341,7 +341,7 @@ def run(
     for (i, j), z in np.ndenumerate(result):
         plt.text(j, i, '{:0.3f}'.format(z), ha='center', va='center')
     plt.colorbar()
-    plt.savefig(rf'pipeline_{main_label}/results/confussion_matrix_{norm_type}_{n_timesteps}_timesteps.jpg')
+    plt.savefig(rf'pipeline_{main_label}/results/confussion_matrix_{norm_type}_{n_timesteps}_timesteps_gelu_B.jpg')
     #################################################
     print("--------------- Done ---------------\n")
 
@@ -358,40 +358,64 @@ def run(
         data, 
         y_pred_onehot, 
         "Eyebrows data",
-        rf'pipeline_{main_label}/results/inference_{norm_type}_{n_timesteps}_timesteps_eyebrows.jpg'
+        rf'pipeline_{main_label}/results/inference_{norm_type}_{n_timesteps}_timesteps_eyebrows_gelu_B.jpg'
     )
 
     data, input_data = get_input(df_right, filter[main_label], scaler, n_timesteps=n_timesteps)
     y_pred_onehot = get_output(input_data, model)
     plot_data_result(
         data, y_pred_onehot, "Right data",
-        rf'pipeline_{main_label}/results/inference_{norm_type}_{n_timesteps}_timesteps_right.jpg'
+        rf'pipeline_{main_label}/results/inference_{norm_type}_{n_timesteps}_timesteps_right_gelu_B.jpg'
     )
 
     data, input_data = get_input(df_left, filter[main_label], scaler, n_timesteps=n_timesteps)
     y_pred_onehot = get_output(input_data, model)
     plot_data_result(
         data, y_pred_onehot, "Left data",
-        rf'pipeline_{main_label}/results/inference_{norm_type}_{n_timesteps}_timesteps_left.jpg'
+        rf'pipeline_{main_label}/results/inference_{norm_type}_{n_timesteps}_timesteps_left_gelu_B.jpg'
     )
 
     data, input_data = get_input(df_both, filter[main_label], scaler, n_timesteps=n_timesteps)
     y_pred_onehot = get_output(input_data, model)
     plot_data_result(
         data, y_pred_onehot, "Both data",
-        rf'pipeline_{main_label}/results/inference_{norm_type}_{n_timesteps}_timesteps_both.jpg'
+        rf'pipeline_{main_label}/results/inference_{norm_type}_{n_timesteps}_timesteps_both_gelu_B.jpg'
     )
 
     data, input_data = get_input(df_teeth, filter[main_label], scaler, n_timesteps=n_timesteps)
     y_pred_onehot = get_output(input_data, model)
     plot_data_result(
         data, y_pred_onehot, "Teeth data",
-        rf'pipeline_{main_label}/results/inference_{norm_type}_{n_timesteps}_timesteps_teeth.jpg'
+        rf'pipeline_{main_label}/results/inference_{norm_type}_{n_timesteps}_timesteps_teeth_gelu_B.jpg'
     )
     print("--------------- Done ---------------\n")
 if __name__ == '__main__':
     # run('teeth', n_timesteps=64, epochs=100,process_dataset=True, norm_type='standard')
     # run('left', n_timesteps=64, epochs=100,process_dataset=True, norm_type='standard')
     # run('right', n_timesteps=64, epochs=100,process_dataset=True, norm_type='standard')
-    run('both', n_timesteps=64, epochs=100,process_dataset=True, norm_type='standard')
-    # run('eyebrows',n_timesteps=64, epochs=100,process_dataset=True,Chans = 4,dropoutRate = 0.5, kernLength = 50, F1 = 16, D = 3,F2 = 16, dropoutType = 'Dropout', norm_type='standard')
+    # run(
+    #     'both', 
+    #     n_timesteps=64, 
+    #     epochs=200,
+    #     process_dataset=True, 
+    #     norm_type='standard',
+    #     dropoutRate = 0.5, 
+    #     kernLength = 32, 
+    #     F1 = 128, 
+    #     D = 5, 
+    #     F2 = 128, 
+    #     dropoutType = 'Dropout',
+    # )
+    run(
+        'eyebrows',
+        n_timesteps=64, 
+        epochs=200,
+        process_dataset=True, 
+        norm_type='standard',
+        dropoutRate = 0.5, 
+        kernLength = 32, 
+        F1 = 128, 
+        D = 5, 
+        F2 = 128, 
+        dropoutType = 'Dropout',
+    )
