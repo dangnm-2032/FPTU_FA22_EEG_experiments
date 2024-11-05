@@ -28,7 +28,7 @@ n_timesteps = 64
 trainable = True
 norm_type = 'standard'
 preprocess_data = False
-epochs = 400
+epochs = 200
 
 label_name = [
     'eyebrows', 

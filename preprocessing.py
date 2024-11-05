@@ -49,41 +49,9 @@ def Implement_Notch_Filter(time, band, freq, ripple, order, filter_type, data):
 def filter_teeth(x):
     x=median(x)
     x=savgol_filter(x, 30, polyorder=5 ,mode='nearest')
-
-
-    # x = butter_bandpass_filter(x, .1, 10, 256, 3)
-    # x = butter_bandpass_filter(x, .1, 10, 256, 3)
-    # x = butter_bandpass_filter(x, .1, 10, 256, 3)
-    # x = butter_bandpass_filter(x, .1, 10, 256, 3)
-
-    # x=Implement_Notch_Filter(None, band=.1, freq=1, ripple=100, order=2, filter_type='butter', data=x)
-    # x=Implement_Notch_Filter(None, band=.1, freq=.5, ripple=100, order=2, filter_type='butter', data=x)
-    # x=Implement_Notch_Filter(None, band=2, freq=4, ripple=100, order=2, filter_type='butter', data=x)
-    # x=Implement_Notch_Filter(None, band=2, freq=6, ripple=100, order=2, filter_type='butter', data=x)
-    # x=Implement_Notch_Filter(None, band=2, freq=7.1, ripple=100, order=2, filter_type='butter', data=x)
-    # x=Implement_Notch_Filter(None, band=2, freq=8.2, ripple=100, order=2, filter_type='butter', data=x)
-    # x=Implement_Notch_Filter(None, band=2, freq=5, ripple=100, order=2, filter_type='butter', data=x)
-
-    # fs = 256
-    # lowcut = 20
-    # highcut = 49
-    # # lowcut = 0.20 * 128
-    # # highcut = 0.30 *128
-    # x = butter_bandpass_filter(x, lowcut, highcut, fs, order=3)
-    # x = median(x, 9)
-    # x = savgol_filter(x, 10, polyorder=5 ,mode='nearest')
-    # x = median(x)
-    # x = savgol_filter(x, 30, polyorder=5 ,mode='nearest')
-
     return x
 
 def filter_eyebrows(x,param=[11,3,12]):
-    # fs = 256
-    # med_size,lowcut,highcut = param[0],param[1],param[2]
-    # x=butter_bandpass_filter(x, lowcut, highcut, fs, order=3)
-    # x=median(x, med_size)
-    # x=savgol_filter(x, 10, polyorder=5 ,mode='nearest')
-
     x = butter_bandpass_filter(x, 0.1, 10, 256, 3)
     x = butter_bandpass_filter(x, 0.1, 10, 256, 3)
     x = butter_bandpass_filter(x, 0.1, 10, 256, 3)
@@ -98,12 +66,6 @@ def filter_eyebrows(x,param=[11,3,12]):
     return x
 
 def filter_right(x):
-    # fs = 256
-    # x=median(x)
-    # x=butter_bandpass_filter(x, lowcut=0.5, highcut=30, fs=fs, order=2)
-    # x=denoise_wavelet(x, method='BayesShrink',mode='hard',wavelet='sym9',wavelet_levels=5,rescale_sigma=True)
-    # x=savgol_filter(x, 120, polyorder=3,mode='constant')
-
     x = butter_bandpass_filter(x, 0.1, 10, 256, 3)
     x = butter_bandpass_filter(x, 0.1, 10, 256, 3)
     x = butter_bandpass_filter(x, 0.1, 10, 256, 3)
@@ -118,14 +80,6 @@ def filter_right(x):
     return x
 
 def filter_left(x):
-    # fs = 256
-    # lowcut = 0.5
-    # highcut = 5
-    # x=median(x)
-    # x=butter_bandpass_filter(x, lowcut, highcut, fs, order=2)
-    # # x=denoise_wavelet(x,method='BayesShrink',mode='soft',wavelet='sym9',wavelet_levels=5,rescale_sigma=True)
-    # x=savgol_filter(x, 20, polyorder=5 ,mode='nearest')
-
     x = butter_bandpass_filter(x, 0.1, 10, 256, 3)
     x = butter_bandpass_filter(x, 0.1, 10, 256, 3)
     x = butter_bandpass_filter(x, 0.1, 10, 256, 3)
@@ -154,11 +108,6 @@ def filter_both(x):
     fs = 256
     lowcut = 1 #0.2
     highcut = 49 #20
-    # x= multiply(x)
-    # x=median(x)
     x=butter_bandpass_filter(x, lowcut, highcut, fs, order=2)
-    # x=denoise_wavelet(x, method='BayesShrink',mode='soft',wavelet='sym9',wavelet_levels=5,rescale_sigma=True)
-    # x=savgol_filter(x, 200, polyorder=5,mode='constant')
-
 
     return x
