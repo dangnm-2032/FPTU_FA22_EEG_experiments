@@ -27,8 +27,8 @@ warnings.filterwarnings("ignore")
 n_timesteps = 64
 trainable = True
 norm_type = 'standard'
-preprocess_data = False
-epochs = 200
+preprocess_data = True
+epochs = 150
 
 label_name = [
     'eyebrows', 
@@ -41,13 +41,13 @@ models = []
 scalers = {}
 
 for label in label_name:
-    _model = load_model(rf'./pipeline_{label}/checkpoints/checkpoint_{norm_type}_{n_timesteps}_timesteps.keras')
+    _model = load_model(rf'./pipeline_{label}/checkpoints/checkpoint_{norm_type}_{n_timesteps}_timesteps_all.keras')
     _model.trainable = trainable
     _model = Model(inputs=_model.input, outputs=_model.layers[-4].output, name=label)
     print(_model.summary())
     models.append(_model)
 
-    scalers[label] = joblib.load(rf'./pipeline_{label}/checkpoints/scaler_{norm_type}.save')
+    scalers[label] = joblib.load(rf'./pipeline_{label}/checkpoints/scaler_{norm_type}_all.save')
 
 @keras.saving.register_keras_serializable(package="my_package", name="UpdatedIoU")
 class UpdatedIoU(tf.keras.metrics.IoU):
@@ -123,12 +123,15 @@ raw_data = {}
 trial_num = 10
 for label in label_name:
     raw_data[label] = {}
-    for position in range(3):
-        for trial in range(trial_num):
-            raw_data[label][len(raw_data[label])] = [
-                rf'./data/raw_data_luc/{label}/{position}_{trial}.csv',
-                rf'./data/roi_luc/{label}/{position}_{trial}.csv'
-            ]
+    for subject in range(2):
+        for position in range(3):
+            for trial in range(trial_num):
+                raw_data[label][len(raw_data[label])] = [
+                    rf'./data/raw_data/{label}/{subject}_{position}_{trial}.csv',
+                    rf'./data/roi/{label}/{subject}_{position}_{trial}.csv'
+                    # rf'./data/raw_data_dang/{label}/{position}_{trial}.csv',
+                    # rf'./data/roi_dang/{label}/{position}_{trial}.csv'
+                ]
     
 
 filters = {
@@ -179,6 +182,7 @@ if __name__ == '__main__' and preprocess_data:
    for proc in jobs:
        proc.join()
 
+# exit()
 train_x = []
 train_y = []
 test_x = []
@@ -189,10 +193,10 @@ for label in label_name:
 
     print(dataset['train_x'].shape, dataset['train_y'].shape, dataset['test_x'].shape, dataset['test_y'].shape)
 
-    train_x.append(dataset['train_x'][:51500])
-    train_y.append(dataset['train_y'][:51500])
-    test_x.append(dataset['test_x'][:12900])
-    test_y.append(dataset['test_y'][:12900])
+    train_x.append(dataset['train_x'][:68400])
+    train_y.append(dataset['train_y'][:68400])
+    test_x.append(dataset['test_x'][:17100])
+    test_y.append(dataset['test_y'][:17100])
 
 train_x = np.concatenate(train_x)
 train_y = np.concatenate(train_y)
@@ -231,6 +235,12 @@ history = model.fit(
         ],
         test_y
     ),
+    callbacks=[
+        tf.keras.callbacks.EarlyStopping(
+            monitor='loss',
+            patience=10
+        )
+    ]
 )
 
 
@@ -259,7 +269,7 @@ plt.legend(['train', 'val'], loc='upper left')
 # plt.xlabel('epoch')
 # plt.legend(['train', 'val'], loc='upper left')
 
-plt.savefig(f'orthogonal_train_result_{norm_type}_{n_timesteps}_timesteps_trainable_{trainable}.png')
+plt.savefig(f'orthogonal_train_result_{norm_type}_{n_timesteps}_timesteps_trainable_{trainable}_all.png')
 
 json.dump(history.history, open(f'./running/orthogonal_train_history_{norm_type}_{n_timesteps}_timesteps_trainable_{trainable}.json', 'w'))
 
@@ -314,6 +324,6 @@ for (i, j), z in np.ndenumerate(result):
     plt.text(j, i, '{:0.3f}'.format(z), ha='center', va='center')
 plt.colorbar()
 
-plt.savefig(f'orthogonal_cm_{norm_type}_{n_timesteps}_timesteps_trainable_{trainable}.png')
+plt.savefig(f'orthogonal_cm_{norm_type}_{n_timesteps}_timesteps_trainable_{trainable}_all.png')
 
-model.save(rf'./checkpoints/orthogonal_{norm_type}_{n_timesteps}_timesteps_trainable_{trainable}.keras')
+model.save(rf'./checkpoints/orthogonal_{norm_type}_{n_timesteps}_timesteps_trainable_{trainable}_all.keras')
