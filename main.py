@@ -1,0 +1,1 @@
+from FPTU_FA24_EEG_Artifacts_Recognition import *

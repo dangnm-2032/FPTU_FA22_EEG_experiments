@@ -1,0 +1,5 @@
+dataset:
+  raw_data_path: 'artifacts/raw_data'
+  raw_roi_path: 'artifacts/roi_data'
+  output_data_path:
+  output_roi_path:
