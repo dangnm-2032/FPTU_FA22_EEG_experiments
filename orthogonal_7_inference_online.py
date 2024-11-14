@@ -43,10 +43,10 @@ line_AF7_raw, = plt.plot(x, [0, 1,]  * temp)
 line_AF8_raw, = plt.plot(x, [0, 1,]  * temp)
 line_TP10_raw, = plt.plot(x, [0, 1,]  * temp)
 
-line_TP9_filter, = plt.plot(x, [0, 1,]  * temp)
-line_AF7_filter, = plt.plot(x, [0, 1,]  * temp)
-line_AF8_filter, = plt.plot(x, [0, 1,]  * temp)
-line_TP10_filter, = plt.plot(x, [0, 1,]  * temp)
+# line_TP9_filter, = plt.plot(x, [0, 1,]  * temp)
+# line_AF7_filter, = plt.plot(x, [0, 1,]  * temp)
+# line_AF8_filter, = plt.plot(x, [0, 1,]  * temp)
+# line_TP10_filter, = plt.plot(x, [0, 1,]  * temp)
 
 
 line_eyebrows, = plt.plot(x, [0, 1,] * temp, label='eyebrows')
@@ -77,7 +77,7 @@ def pipeline(x, filter, scaler):
 
 ##################### MODEL ###############################################
 n_timesteps = 64
-model = load_model(r'.\checkpoints\orthogonal_64_timesteps_trainable_True.keras')
+model = load_model(r'.\checkpoints\orthogonal_standard_64_timesteps_trainable_True_dang.keras')
 ###########################################################################
 
 
@@ -86,7 +86,7 @@ import joblib
 label_name = ['eyebrows', 'left', 'right', 'both', 'teeth']
 scalers = {}
 for label in label_name:
-    scalers[label] = joblib.load(rf'.\pipeline_{label}\checkpoints\scaler.save')
+    scalers[label] = joblib.load(rf'.\pipeline_{label}\checkpoints\scaler_standard_dang.save')
 ###########################################################################
 
 filters = {
@@ -177,16 +177,16 @@ try:
         buffer[-n_timesteps:, 12] = y_pred[0, :, 5] + 0
         
         line_TP9_raw.set_ydata(buffer[:, 0])
-        line_TP9_filter.set_ydata(buffer[:, 1])
+        # line_TP9_filter.set_ydata(buffer[:, 1])
 
         line_AF7_raw.set_ydata(buffer[:, 2])
-        line_AF7_filter.set_ydata(buffer[:, 3])
+        # line_AF7_filter.set_ydata(buffer[:, 3])
 
         line_AF8_raw.set_ydata(buffer[:, 4])
-        line_AF8_filter.set_ydata(buffer[:, 5])
+        # line_AF8_filter.set_ydata(buffer[:, 5])
 
         line_TP10_raw.set_ydata(buffer[:, 6])
-        line_TP10_filter.set_ydata(buffer[:, 7])
+        # line_TP10_filter.set_ydata(buffer[:, 7])
 
         line_eyebrows.set_ydata(buffer[:, 8])
         line_left.set_ydata(buffer[:, 9])

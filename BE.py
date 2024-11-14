@@ -46,6 +46,7 @@ class ControlBackend:
 
         self.n_timesteps = 64
         
+        self.duration=5
 
     def list_all_ports(self):
         self.list_ports = []
@@ -110,6 +111,7 @@ class ControlBackend:
 
         self.status_controller_connect = True
         print("Connection successfully!")
+        return True
 
     def check_muse_stream(self):
         if self.muse_stream is None:
@@ -127,6 +129,15 @@ class ControlBackend:
                 self.inlet.close_stream()
                 self.inlet = None
 
+    def check_infinity(self):
+        time_start = time.time()
+        while True:
+            time.sleep(0.01)
+            if time.time()-time_start >= self.duration:
+                time_start = time.time()
+                print('start new stream')
+                self.check_muse_stream()
+
     def connect_muse_stream(self):
         if not self.inlet:
             # Search for active LSL streams
@@ -138,8 +149,9 @@ class ControlBackend:
         
         
             print("Start acquiring data")
-            self.inlet = StreamInlet(streams[0], max_chunklen=self.n_timesteps)
+            self.inlet = StreamInlet(streams[0])
             self.status_muse_connect = True
+            return True
 
     def exit(self):
         if self.inlet:
@@ -151,7 +163,7 @@ class ControlBackend:
         if self.status_muse_stream:
             self.muse_stream.kill()
 
-        exit()
+        # exit()
 
     def init_module(self):
         ##################### SCALER #########################################
@@ -159,11 +171,11 @@ class ControlBackend:
         label_name = ['eyebrows', 'left', 'right', 'both', 'teeth']
         self.scalers = {}
         for label in label_name:
-            self.scalers[label] = joblib.load(rf'.\pipeline_{label}\checkpoints\scaler_standard.save')
+            self.scalers[label] = joblib.load(rf'.\pipeline_{label}\checkpoints\scaler_standard_all.save')
         ######################################################################
 
         ####################### MODEL ############################################
-        self.model = load_model(r'.\checkpoints\orthogonal_standard_64_timesteps_trainable_True.keras')
+        self.model = load_model(r'.\checkpoints\orthogonal_standard_64_timesteps_trainable_True_all.keras')
         ####################### END MODEL ########################################
 
         ####### FILTER #############################################
@@ -217,20 +229,20 @@ class ControlBackend:
             input[:, 12:16],
             input[:, 16:20]
         ])
-        y_pred = np.argmax(y_pred, 2)[0]
+        y_pred_1 = y_pred
+        y_pred_1 = np.argmax(y_pred_1, 2)[0]
         #############################################################################
-        # print(y_pred)
+        # print(y_pred_1)
         count = [0, 0, 0, 0, 0, 0]
 
-        temp = np.unique(y_pred, return_counts=True)
+        temp = np.unique(y_pred_1, return_counts=True)
         for i in range(temp[0].shape[0]):
             count[temp[0][i]] = temp[1][i]
         count = np.array(count)
-        # count[0] = 0
+        # # count[0] = 0
 
-        # print(count)
+        # # print(count)
         pred = np.argmax(count)
-
         if pred == 1:
             print('Eyebrows - Go backward')
             self.ser.write(bytes('2', 'ascii'))
@@ -246,8 +258,7 @@ class ControlBackend:
         elif pred == 5:
             print('Teeth - Go forward')
             self.ser.write(bytes('1', 'ascii'))
-
-        return pred
+        return pred,eeg_data,input,y_pred
 
     def main(self):
         while True:
@@ -287,10 +298,13 @@ Menu:
                     while True:
                         pred = self.inference()
                         print(pred)
+                except Exception as e:
+                    print(e)
                 except:
                     print("Lost connection")
             elif choice == 0:
                 self.exit()
+                break
             else:
                 print("Not implemented")
                 continue
