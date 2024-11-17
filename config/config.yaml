@@ -3,3 +3,55 @@ dataset:
   raw_roi_path: 'artifacts/roi_data'
   output_data_path:
   output_roi_path:
+
+eeg_model:
+  eyebrows:
+    nb_classes :1 
+    Chans :4
+    Samples :64
+    dropoutRate :0.5
+    kernLength :32
+    F1 :128
+    D :5
+    F2 :128
+    dropoutType :'Dropout'
+  left:
+    nb_classes :1 
+    Chans :4
+    Samples :64
+    dropoutRate :0.5
+    kernLength :32
+    F1 :128
+    D :5
+    F2 :128
+    dropoutType :'Dropout'
+  right:
+    nb_classes :1 
+    Chans :4
+    Samples :64
+    dropoutRate :0.5
+    kernLength :32
+    F1 :128
+    D :5
+    F2 :128
+    dropoutType :'Dropout'
+  both:
+    nb_classes :1 
+    Chans :4
+    Samples :64
+    dropoutRate :0.5
+    kernLength :32
+    F1 :128
+    D :5
+    F2 :128
+    dropoutType :'Dropout'
+  teeth:
+    nb_classes :1 
+    Chans :4
+    Samples :64
+    dropoutRate :0.5
+    kernLength :32
+    F1 :128
+    D :5
+    F2 :128
+    dropoutType :'Dropout'
