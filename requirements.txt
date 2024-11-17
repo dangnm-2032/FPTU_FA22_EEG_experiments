@@ -1,0 +1,5 @@
+PyYAML
+setuptools
+ensure
+python_box
+-e .

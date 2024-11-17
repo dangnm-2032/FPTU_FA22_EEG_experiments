@@ -296,10 +296,10 @@ with open(f"src/{project_name}/utils/common.py", 'w') as f:
 from pathlib import Path
 from box import ConfigBox 
 from box.exceptions import BoxValueError
-from vinewschatbot.logging import logger
+from FPTU_FA24_EEG_Artifacts_Recognition.logging import logger
 from ensure import ensure_annotations
 import os
-from vinewschatbot.constants import *
+from FPTU_FA24_EEG_Artifacts_Recognition.constants import *
 
 @ensure_annotations
 def read_yaml(path_to_yaml: Path) -> ConfigBox: 

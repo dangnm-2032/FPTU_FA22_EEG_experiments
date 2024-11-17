@@ -1,0 +1,8 @@
+eeg_model:
+  left:
+    F1:
+    F2:
+    D:
+    ...
+  right:
+    ...
