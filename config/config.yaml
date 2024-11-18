@@ -3,4 +3,5 @@ dataset:
   raw_roi_path: 'artifacts/roi_data'
   output_data_path:
   output_roi_path:
-  filepath_format: '{subject_id}/{position}_{trial}.csv'
+  label: ['eyebrows', 'left', 'right', 'both', 'teeth']
+  filepath_format: '{subject_id}/{label}/{position}_{trial}.csv'

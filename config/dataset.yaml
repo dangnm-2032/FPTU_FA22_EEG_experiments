@@ -1,13 +1,13 @@
 subject:
-  id_0:
+  0:
     name: 'Dang Nguyen Minh'
     position: 3
     trial: 10
-  id_1:
+  1:
     name: 'Luc Huynh Tan'
     position: 3
     trial: 10
-  id_2:
+  2:
     name: 'Dat Le Manh'
     position: 1
     trial: 10
