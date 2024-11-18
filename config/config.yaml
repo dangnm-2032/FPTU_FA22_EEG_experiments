@@ -2,6 +2,8 @@ dataset:
   raw_data_path: 'artifacts/raw_data'
   raw_roi_path: 'artifacts/roi_data'
   output_data_path:
-  output_roi_path:
+  output_roi_path: 'artifacts/transform_roi_data'
   label: ['eyebrows', 'left', 'right', 'both', 'teeth']
   filepath_format: '{subject_id}/{label}/{position}_{trial}.csv'
+  scaler_path: 'artifacts/checkpoints/scaler'
+  scaler_extension: '.save'

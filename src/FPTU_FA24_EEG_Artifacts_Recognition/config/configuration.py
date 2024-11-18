@@ -34,7 +34,9 @@ class ConfigurationManager:
             output_roi_path=config.output_roi_path,
             filepath_format=config.filepath_format,
             label=config.label,
-            details=details
+            details=details,
+            scaler_path=config.scaler_path,
+            scaler_extension=config.scaler_extension
         )
 
     def get_eeg_model_config(self):

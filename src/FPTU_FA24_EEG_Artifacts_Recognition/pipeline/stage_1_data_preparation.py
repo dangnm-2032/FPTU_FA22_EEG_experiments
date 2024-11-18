@@ -12,12 +12,12 @@ class DataPreparationPipeline:
         # Transform raw ROI file
         self.data_preparer.transform_roi_files()
 
-        # Initialize preprocess pipeline for each label
-        self.data_preparer.preprocess_for_left()
-        self.data_preparer.preprocess_for_right()
-        self.data_preparer.preprocess_for_both()
-        self.data_preparer.preprocess_for_teeth()
-        self.data_preparer.preprocess_for_eyebrows()
+        # Initialize scaler for each label
+        self.data_preparer.fitting_scaler_for_left()
+        self.data_preparer.fitting_scaler_for_right()
+        self.data_preparer.fitting_scaler_for_both()
+        self.data_preparer.fitting_scaler_for_teeth()
+        self.data_preparer.fitting_scaler_for_eyebrows()
 
 if __name__ == '__main__':
     config_manager = ConfigurationManager()

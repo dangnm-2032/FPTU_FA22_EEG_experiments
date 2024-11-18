@@ -2,35 +2,6 @@ from dataclasses import dataclass
 from pathlib import Path
 
 @dataclass
-class Dataset:
-    raw_data_path: Path
-    raw_roi_path: Path
-
-@dataclass
-class RightModule:
-    nb_classes: int
-    Chans: int
-    Samples: int
-    dropoutRate: float
-    kernLength: int
-    F1: int
-    D: int
-    F2: int
-    dropoutType: str
-
-@dataclass
-class RightModule:
-    nb_classes: int
-    Chans: int
-    Samples: int
-    dropoutRate: float
-    kernLength: int
-    F1: int
-    D: int
-    F2: int
-    dropoutType: str
-
-@dataclass
 class EEGModule:
     nb_classes: int
     Chans: int
@@ -66,3 +37,5 @@ class Dataset:
     filepath_format: str
     label: list
     details: dict
+    scaler_path: Path
+    scaler_extension: str

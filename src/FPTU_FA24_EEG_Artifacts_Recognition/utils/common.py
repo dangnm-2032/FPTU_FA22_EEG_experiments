@@ -35,3 +35,20 @@ def stage_name(
 ) -> str:
     text = ">" * 10 + text + "<" * 10
     return text
+
+def itter_dataset_file(config):
+    num_subject = len(config.details)
+    for idx in range(num_subject):
+        subject = config.details[idx]
+        for label in config.label:
+            for position in range(subject.position):
+                for trial in range(subject.trial):
+                    yield idx, label, position, trial
+
+def itter_dataset_file_by_label(config, label):
+    num_subject = len(config.details)
+    for idx in range(num_subject):
+        subject = config.details[idx]
+        for position in range(subject.position):
+            for trial in range(subject.trial):
+                yield idx, label, position, trial
