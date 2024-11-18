@@ -38,8 +38,18 @@ class ConfigurationManager:
             scaler_path=config.scaler_path,
             scaler_extension=config.scaler_extension
         )
-
+    
     def get_eeg_model_config(self):
+        config = self.config.eeg_model
+        return EEGModelConfig(
+            save_path=config.save_path,
+            save_name=config.save_name,
+            weight_extension=config.weight_extension,
+            config_extension=config.config_extension,
+            inference_model=config.inference_model
+        )
+
+    def get_eeg_model_params(self):
         config = self.params.eeg_model
         left_module = EEGModule(
             nb_classes=config.left.nb_classes,
@@ -96,10 +106,16 @@ class ConfigurationManager:
             F2=config.teeth.F2,
             dropoutType=config.teeth.dropoutType,
         )
+        training = TrainingParams(
+            learning_rate=config.training.learning_rate,
+            batch_size=config.training.batch_size,
+            epochs=config.training.epochs
+        )
         return EEGModel(
             left=left_module,
             right=right_module,
             both=both_module,
             teeth=teeth_module,
-            eyebrows=eyebrows_module
+            eyebrows=eyebrows_module,
+            training=training
         )

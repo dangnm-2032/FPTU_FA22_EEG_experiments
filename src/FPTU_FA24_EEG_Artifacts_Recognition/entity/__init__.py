@@ -14,12 +14,19 @@ class EEGModule:
     dropoutType: str
 
 @dataclass
+class TrainingParams:
+    learning_rate: float
+    batch_size: int
+    epochs: int
+
+@dataclass
 class EEGModel:
     right: EEGModule
     left: EEGModule
     teeth: EEGModule
     both: EEGModule
     eyebrows: EEGModule
+    training: TrainingParams
 
 @dataclass
 class RecordSubject:
@@ -39,3 +46,11 @@ class Dataset:
     details: dict
     scaler_path: Path
     scaler_extension: str
+
+@dataclass
+class EEGModelConfig:
+    save_path: Path
+    save_name: str
+    weight_extension: str
+    config_extension: str
+    inference_model: Path

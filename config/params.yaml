@@ -49,3 +49,7 @@ eeg_model:
     D: 5
     F2: 128
     dropoutType: 'Dropout'
+  training:
+    learning_rate: 0.001
+    batch_size: 32
+    epochs: 150

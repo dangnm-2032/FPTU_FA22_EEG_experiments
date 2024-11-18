@@ -7,3 +7,10 @@ dataset:
   filepath_format: '{subject_id}/{label}/{position}_{trial}.csv'
   scaler_path: 'artifacts/checkpoints/scaler'
   scaler_extension: '.save'
+
+eeg_model:
+  save_path: 'artifacts/checkpoints/model'
+  save_name: ''
+  weight_extension: '.keras'
+  config_extension: '.json'
+  inference_model: ''

@@ -4,6 +4,7 @@ import joblib
 import pandas as pd
 from copy import deepcopy
 import warnings
+import time
 warnings.filterwarnings("ignore")
 
 class Trainer:
@@ -64,13 +65,16 @@ class Trainer:
         model_config = self.config.get_eeg_model_config()
 
         timestep = model_config.both.Samples
+        running_time = []
 
         for label in dataset_config.label:
             temp_input = []
             temp_output = []
             total_file = len(self.data[label])
             for i, (input_filepath, output_filepath) in enumerate(self.data[label]):
-                print(label, i, total_file, end='\r')
+                start = time.time()
+                avg_time = 0 if not running_time else (sum(running_time)/len(running_time))
+                print(label, i, total_file, avg_time, end='\r')
                 input_df = pd.read_csv(input_filepath).drop(columns=['timestamps', 'Right AUX'])
                 output_df = pd.read_csv(output_filepath, index_col=0)
 
@@ -96,11 +100,9 @@ class Trainer:
                             self.input[_label].append(_input)
                         
                         self.output = window_output * LABEL2IDX[label]
+                end = time.time()
+                running_time.append(start-end)
             print()
-
-
-
-
 
 
     def train(self):

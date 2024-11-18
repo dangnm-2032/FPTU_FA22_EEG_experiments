@@ -52,3 +52,15 @@ def itter_dataset_file_by_label(config, label):
         for position in range(subject.position):
             for trial in range(subject.trial):
                 yield idx, label, position, trial
+
+def pipeline(x, filter, scaler, i=None, time_step=None):
+    if i is None:
+        i = 0
+    if time_step is None:
+        time_step = x.shape[0]
+    x_new = x[i:i+time_step].copy()
+    for col in range(x_new.shape[1]):
+        x_new[:, col] = filter(x_new[:, col])
+    x_new = scaler.transform(x_new)
+
+    return x_new
