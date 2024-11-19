@@ -5,6 +5,8 @@ CONFIG_FILE_PATH = Path('config/config.yaml')
 PARAMS_FILE_PATH = Path('config/params.yaml')
 DATASET_DETAIL_FILE_PATH = Path('config/dataset.yaml')
 
+RESULT_FOLDER_PATH = Path('results/')
+
 CURRENT_WORKING_DIRECTORY = os.getcwd()
 
 LABEL2IDX = {

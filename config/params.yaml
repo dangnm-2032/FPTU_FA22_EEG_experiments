@@ -52,4 +52,4 @@ eeg_model:
   training:
     learning_rate: 0.001
     batch_size: 32
-    epochs: 150
+    epochs: 1 #150

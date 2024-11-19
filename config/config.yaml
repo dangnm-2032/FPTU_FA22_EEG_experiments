@@ -8,10 +8,12 @@ dataset:
   scaler_path: 'artifacts/checkpoints/scaler'
   scaler_extension: '.save'
   skip_preprocess_data: true
+  save_test_data: 'artifacts/test_data'
 
 eeg_model:
   save_path: 'artifacts/checkpoints/model'
   save_name: 'test'
   weight_extension: '.keras'
   config_extension: '.yaml'
+  history_extension: '.history'
   inference_model: ''

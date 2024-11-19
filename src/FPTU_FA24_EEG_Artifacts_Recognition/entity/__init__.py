@@ -36,7 +36,7 @@ class RecordSubject:
     trial: int
 
 @dataclass
-class Dataset:
+class EEGDataset:
     raw_data_path: Path
     raw_roi_path: Path
     output_data_path: Path
@@ -47,6 +47,7 @@ class Dataset:
     scaler_path: Path
     scaler_extension: str
     skip_preprocess_data: bool
+    save_test_data: Path
 
 @dataclass
 class EEGModelConfig:
@@ -54,4 +55,5 @@ class EEGModelConfig:
     save_name: str
     weight_extension: str
     config_extension: str
+    history_extension: str
     inference_model: Path

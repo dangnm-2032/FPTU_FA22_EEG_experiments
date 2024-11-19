@@ -9,6 +9,7 @@ import multiprocessing
 import datasets
 from .models import *
 import shutil
+import json
 
 import tensorflow as tf
 from tensorflow.keras.models import Model, load_model
@@ -121,6 +122,8 @@ class Trainer:
         train_ds = datasets.concatenate_datasets(train_ds)
         test_ds = datasets.concatenate_datasets(test_ds)
 
+        test_ds.save_to_disk(dataset_config.save_test_data)
+
         print(train_ds)
         print(test_ds)
 
@@ -169,7 +172,7 @@ class Trainer:
             ]
         )
 
-        model.fit(
+        history = model.fit(
             [
                 train_ds['eyebrows'],
                 train_ds['left'],
@@ -192,12 +195,29 @@ class Trainer:
             epochs=model_params.training.epochs
         )
 
+
         model_config = self.config.get_eeg_model_config()
+
+        # Save training history
+        json.dump(
+            history.history, 
+            open(
+                Path(os.path.join(
+                    model_config.save_path,
+                    model_config.save_name + model_config.history_extension
+                )), 
+                'w'
+            )
+        )
+
+        # Save model checkpoint
         os.makedirs(model_config.save_path, exist_ok=True)
         model.save(Path(os.path.join(
             model_config.save_path,
             model_config.save_name + model_config.weight_extension
         )))
+
+        # Save model params
         shutil.copyfile(
             PARAMS_FILE_PATH, 
             Path(os.path.join(

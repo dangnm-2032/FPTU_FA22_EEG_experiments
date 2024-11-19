@@ -27,7 +27,7 @@ class ConfigurationManager:
             )
             details[idx] = temp
 
-        return Dataset(
+        return EEGDataset(
             raw_data_path=config.raw_data_path, 
             raw_roi_path=config.raw_roi_path,
             output_data_path=config.output_data_path,
@@ -37,7 +37,8 @@ class ConfigurationManager:
             details=details,
             scaler_path=config.scaler_path,
             scaler_extension=config.scaler_extension,
-            skip_preprocess_data=config.skip_preprocess_data
+            skip_preprocess_data=config.skip_preprocess_data,
+            save_test_data=config.save_test_data
         )
     
     def get_eeg_model_config(self):
@@ -47,6 +48,7 @@ class ConfigurationManager:
             save_name=config.save_name,
             weight_extension=config.weight_extension,
             config_extension=config.config_extension,
+            history_extension=config.history_extension,
             inference_model=config.inference_model
         )
 
