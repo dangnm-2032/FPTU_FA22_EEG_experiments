@@ -5,6 +5,16 @@ import pandas as pd
 from copy import deepcopy
 import warnings
 import time
+import multiprocessing
+import datasets
+from .models import *
+import shutil
+
+import tensorflow as tf
+from tensorflow.keras.models import Model, load_model
+from tensorflow.keras.layers import Dense, Activation, Reshape, Concatenate
+
+
 warnings.filterwarnings("ignore")
 
 class Trainer:
@@ -52,58 +62,146 @@ class Trainer:
             self.data[label] = deepcopy(files)
 
     def transform_data(self):
-        self.input = {
-            'eyebrows': [],
-            'left': [],
-            'right': [],
-            'both': [],
-            'teeth': []
-        }
-        self.output = []
-
         dataset_config = self.config.get_dataset_config()
-        model_config = self.config.get_eeg_model_config()
+        model_config = self.config.get_eeg_model_params()
 
         timestep = model_config.both.Samples
-        running_time = []
+
+        jobs = []
+
+        if dataset_config.skip_preprocess_data:
+            return
 
         for label in dataset_config.label:
-            temp_input = []
-            temp_output = []
-            total_file = len(self.data[label])
-            for i, (input_filepath, output_filepath) in enumerate(self.data[label]):
-                start = time.time()
-                avg_time = 0 if not running_time else (sum(running_time)/len(running_time))
-                print(label, i, total_file, avg_time, end='\r')
-                input_df = pd.read_csv(input_filepath).drop(columns=['timestamps', 'Right AUX'])
-                output_df = pd.read_csv(output_filepath, index_col=0)
+            p = multiprocessing.Process(
+                target=run_data_process, 
+                args=(
+                    self.data, 
+                    label,
+                    timestep, 
+                    dataset_config, 
+                    self.filters, 
+                    self.scalers
+                )
+            )
+            jobs.append(p)
+            p.start()
 
-                input_data = input_df.to_numpy()
-                output_data = output_df.to_numpy()
-
-                assert input_data.shape[1] == 4
-                assert output_data.shape[0] == input_data.shape[0]
-
-                for i in range(0, input_data.shape[0] - timestep):
-                    if 1 in output_data[i:i+timestep]:
-                        window_input = input_data[i:i+timestep]
-                        window_output = output_data[i:i+timestep]
-
-                        for _label in dataset_config.label:
-                            filter = self.filters[_label]
-                            scaler = self.scalers[_label]
-                            _input = window_input.copy()
-                            for col in range(window_input.shape[1]):
-                                _input[:, col] = filter(window_input[:, col])
-                            _input = scaler.transform(_input) # sample, channel (64, 4)
-
-                            self.input[_label].append(_input)
-                        
-                        self.output = window_output * LABEL2IDX[label]
-                end = time.time()
-                running_time.append(start-end)
-            print()
+        for proc in jobs:
+            proc.join()
 
 
     def train(self):
-        pass
+        # Prepare data
+        dataset_config = self.config.get_dataset_config()
+        ds_min = 9999999
+        big_df = {}
+        for label in dataset_config.label:
+            ds = datasets.Dataset.load_from_disk(Path(os.path.join(
+                dataset_config.output_data_path, label
+            )))
+            ds.set_format('tf')
+            ds = ds.map(transform_data, num_proc=5)
+            
+            big_df[label] = ds
+            if ds_min > len(ds):
+                ds_min = len(ds)
+
+        train_ds = []
+        test_ds = []
+
+        for label in dataset_config.label:
+            big_df[label] = big_df[label].shuffle(seed=42)
+            big_df[label] = big_df[label].select(range(ds_min))
+
+            ds = big_df[label].train_test_split(test_size=0.2, shuffle=False)
+            train_ds.append(ds['train'])
+            test_ds.append(ds['test'])
+
+        train_ds = datasets.concatenate_datasets(train_ds)
+        test_ds = datasets.concatenate_datasets(test_ds)
+
+        print(train_ds)
+        print(test_ds)
+
+        # Modelling
+        model_params = self.config.get_eeg_model_params()
+        
+        backbone_left, backbone_left_featmap = get_backbone_and_feature_map(model_params.left, EEGNet, 'left')
+        backbone_right, backbone_right_featmap = get_backbone_and_feature_map(model_params.right, EEGNet, 'right')
+        backbone_both, backbone_both_featmap = get_backbone_and_feature_map(model_params.both, EEGNet, 'both')
+        backbone_teeth, backbone_teeth_featmap = get_backbone_and_feature_map(model_params.teeth, EEGNet, 'teeth')
+        backbone_eyebrows, backbone_eyebrows_featmap = get_backbone_and_feature_map(model_params.eyebrows, EEGNet, 'eyebrows')
+
+        x = Concatenate()([
+            backbone_left_featmap,
+            backbone_right_featmap,
+            backbone_both_featmap,
+            backbone_teeth_featmap,
+            backbone_eyebrows_featmap
+        ])
+        x = Dense(1024, activation='gelu')(x)
+        x = Dense(512, activation='gelu')(x)
+        x = Dense(model_params.eyebrows.Samples*6, activation='linear')(x)
+        x = Reshape((model_params.eyebrows.Samples, 6))(x)
+        x = Activation('softmax', name = 'softmax')(x)
+
+        model = Model(
+            inputs=[
+                backbone_eyebrows.input,
+                backbone_left.input,
+                backbone_right.input,
+                backbone_both.input,
+                backbone_teeth.input,
+            ], 
+            outputs=x
+        )
+
+        model.summary()
+
+        model.compile(
+            loss='sparse_categorical_crossentropy', 
+            optimizer=tf.keras.optimizers.Adam(
+                learning_rate=model_params.training.learning_rate
+            ),
+            metrics=[
+                'sparse_categorical_accuracy', 
+            ]
+        )
+
+        model.fit(
+            [
+                train_ds['eyebrows'],
+                train_ds['left'],
+                train_ds['right'],
+                train_ds['both'],
+                train_ds['teeth'],
+            ],
+            train_ds['label'],
+            validation_data=(
+                [
+                    test_ds['eyebrows'],
+                    test_ds['left'],
+                    test_ds['right'],
+                    test_ds['both'],
+                    test_ds['teeth'],
+                ],
+                test_ds['label']
+            ),
+            batch_size=model_params.training.batch_size,
+            epochs=model_params.training.epochs
+        )
+
+        model_config = self.config.get_eeg_model_config()
+        os.makedirs(model_config.save_path, exist_ok=True)
+        model.save(Path(os.path.join(
+            model_config.save_path,
+            model_config.save_name + model_config.weight_extension
+        )))
+        shutil.copyfile(
+            PARAMS_FILE_PATH, 
+            Path(os.path.join(
+                model_config.save_path,
+                model_config.save_name + model_config.config_extension
+            ))
+        )

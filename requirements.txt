@@ -9,4 +9,5 @@ muselsl
 pyserial
 tensorflow
 PySimpleGUI
+datasets
 -e .

@@ -46,6 +46,7 @@ class Dataset:
     details: dict
     scaler_path: Path
     scaler_extension: str
+    skip_preprocess_data: bool
 
 @dataclass
 class EEGModelConfig:

@@ -36,7 +36,8 @@ class ConfigurationManager:
             label=config.label,
             details=details,
             scaler_path=config.scaler_path,
-            scaler_extension=config.scaler_extension
+            scaler_extension=config.scaler_extension,
+            skip_preprocess_data=config.skip_preprocess_data
         )
     
     def get_eeg_model_config(self):
