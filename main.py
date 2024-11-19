@@ -1,13 +1,35 @@
 from FPTU_FA24_EEG_Artifacts_Recognition.config import *
 from FPTU_FA24_EEG_Artifacts_Recognition.pipeline import *
 
-config_manager = ConfigurationManager()
+def main():
+    config_manager = ConfigurationManager()
 
-pipeline = DataPreparationPipeline(config_manager)
-pipeline.main()
+    try:
+        STAGE_NAME = stage_name("STAGE 1: DATA PREPARATION")
+        logger.info(STAGE_NAME)
+        pipeline = DataPreparationPipeline(config_manager)
+        pipeline.main()
+    except Exception as e:
+        logger.exception(e)
+        raise e
+    
+    try:
+        STAGE_NAME = stage_name("STAGE 2: TRAINING")
+        logger.info(STAGE_NAME)
+        pipeline = TrainingPipeline(config_manager)
+        pipeline.main()
+    except Exception as e:
+        logger.exception(e)
+        raise e
+    
+    try:
+        STAGE_NAME = stage_name("STAGE 3: EVALUATION")
+        logger.info(STAGE_NAME)
+        pipeline = EvaluationPipeline(config_manager)
+        pipeline.main()
+    except Exception as e:
+        logger.exception(e)
+        raise e
 
-pipeline = TrainingPipeline(config_manager)
-pipeline.main()
-
-pipeline = EvaluationPipeline(config_manager)
-pipeline.main()
+if __name__ == "__main__":
+    main()

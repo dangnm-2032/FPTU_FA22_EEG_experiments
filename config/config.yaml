@@ -1,4 +1,7 @@
 dataset:
+  # Change this to true if in the previous you did the preprocess
+  skip_preprocess_data: false
+  # Do not change below
   raw_data_path: 'artifacts/raw_data'
   raw_roi_path: 'artifacts/roi_data'
   output_data_path: 'artifacts/transform_data'
@@ -7,13 +10,14 @@ dataset:
   filepath_format: '{subject_id}/{label}/{position}_{trial}.csv'
   scaler_path: 'artifacts/checkpoints/scaler'
   scaler_extension: '.save'
-  skip_preprocess_data: true
   save_test_data: 'artifacts/test_data'
 
 eeg_model:
+  # You can change 
+  save_name: 'exp1'
+  inference_model: '' # Here you choose the checkpoint you want to run app
+  # Do not change
   save_path: 'artifacts/checkpoints/model'
-  save_name: 'test'
   weight_extension: '.keras'
   config_extension: '.yaml'
   history_extension: '.history'
-  inference_model: ''

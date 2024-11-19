@@ -4,7 +4,7 @@ import threading
 import random
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import matplotlib.pyplot as plt
-from FPTU_FA24_EEG_Artifacts_Recognition.conponents import *
+from FPTU_FA24_EEG_Artifacts_Recognition.conponents.backend import *
 # from test10 import *
 config_manager = ConfigurationManager()
 app = ControlBackend(config_manager)

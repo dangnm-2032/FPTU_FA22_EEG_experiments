@@ -13,7 +13,7 @@ class Validator:
     def load_test_data(self):
         dataset_config = self.config.get_dataset_config()
         self.test_data = datasets.load_from_disk(dataset_config.save_test_data)
-        del dataset_config, test_data
+        del dataset_config
     
     def load_model(self):
         model_config = self.config.get_eeg_model_config()
@@ -21,7 +21,7 @@ class Validator:
             model_config.save_path,
             model_config.save_name + model_config.weight_extension
         )))
-        del model_config, model
+        del model_config
 
     def evaluate(self):
         model_config = self.config.get_eeg_model_config()
@@ -123,4 +123,4 @@ class Validator:
         )
 
 
-        del model_config,history, y_pred, y_true, cm_total, y_t, y_p, cm , result, cls, tp, fn fp, tn, precision, recall,f1, acc, specifity
+        del model_config,history, y_pred, y_true, cm_total, y_t, y_p, cm , result, cls, tp, fn, fp, tn, precision, recall,f1, acc, specifity

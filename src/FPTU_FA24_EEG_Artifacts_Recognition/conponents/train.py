@@ -34,7 +34,7 @@ class Trainer:
                     label + config.scaler_extension
                 )
             ))
-        del filters, scalers,config,label
+        del config,label
 
 
     def load_data(self):
@@ -62,7 +62,8 @@ class Trainer:
                 files.append([raw_data_filepath, roi_filepath])
             print(len(files))
             self.data[label] = deepcopy(files)
-         del dataset_config,data,label,files,idx, position,trial,filepath,raw_data_filepath,roi_filepath
+
+        del dataset_config,label,files,idx, position,trial,filepath,raw_data_filepath,roi_filepath
 
     def transform_data(self):
         dataset_config = self.config.get_dataset_config()
@@ -92,6 +93,7 @@ class Trainer:
 
         for proc in jobs:
             proc.join()
+
         del dataset_config,model_config,timestep,jobs,label,p,proc
 
 
@@ -105,7 +107,7 @@ class Trainer:
                 dataset_config.output_data_path, label
             )))
             ds.set_format('tf')
-            ds = ds.map(transform_data, num_proc=5)
+            ds = ds.map(transform_data)
             
             big_df[label] = ds
             if ds_min > len(ds):
@@ -201,6 +203,14 @@ class Trainer:
 
         model_config = self.config.get_eeg_model_config()
 
+        os.makedirs(model_config.save_path, exist_ok=True)
+
+        # Save model checkpoint
+        model.save(Path(os.path.join(
+            model_config.save_path,
+            model_config.save_name + model_config.weight_extension
+        )))
+
         # Save training history
         json.dump(
             history.history, 
@@ -213,13 +223,6 @@ class Trainer:
             )
         )
 
-        # Save model checkpoint
-        os.makedirs(model_config.save_path, exist_ok=True)
-        model.save(Path(os.path.join(
-            model_config.save_path,
-            model_config.save_name + model_config.weight_extension
-        )))
-
         # Save model params
         shutil.copyfile(
             PARAMS_FILE_PATH, 
@@ -228,7 +231,4 @@ class Trainer:
                 model_config.save_name + model_config.config_extension
             ))
         )
-        del dataset_config, ds_min,big_df,label,ds,train_ds,test_ds, model_params,backbone_left, 
-        backbone_left_featmap,backbone_right, backbone_right_featmap, backbone_both, backbone_both_featmap,
-        backbone_teeth, backbone_teeth_featmap ,backbone_eyebrows, backbone_eyebrows_featmap,
-        x,model,history, model_config
+        del dataset_config, ds_min,big_df,label,ds,train_ds,test_ds, model_params,backbone_left, backbone_left_featmap, backbone_right, backbone_right_featmap, backbone_both, backbone_both_featmap, backbone_teeth, backbone_teeth_featmap ,backbone_eyebrows, backbone_eyebrows_featmap, x,model,history, model_config
