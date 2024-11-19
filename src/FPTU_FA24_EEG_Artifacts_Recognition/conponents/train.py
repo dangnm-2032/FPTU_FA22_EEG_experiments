@@ -34,6 +34,7 @@ class Trainer:
                     label + config.scaler_extension
                 )
             ))
+        del filters, scalers,config,label
 
 
     def load_data(self):
@@ -61,6 +62,7 @@ class Trainer:
                 files.append([raw_data_filepath, roi_filepath])
             print(len(files))
             self.data[label] = deepcopy(files)
+         del dataset_config,data,label,files,idx, position,trial,filepath,raw_data_filepath,roi_filepath
 
     def transform_data(self):
         dataset_config = self.config.get_dataset_config()
@@ -90,6 +92,7 @@ class Trainer:
 
         for proc in jobs:
             proc.join()
+        del dataset_config,model_config,timestep,jobs,label,p,proc
 
 
     def train(self):
@@ -225,3 +228,7 @@ class Trainer:
                 model_config.save_name + model_config.config_extension
             ))
         )
+        del dataset_config, ds_min,big_df,label,ds,train_ds,test_ds, model_params,backbone_left, 
+        backbone_left_featmap,backbone_right, backbone_right_featmap, backbone_both, backbone_both_featmap,
+        backbone_teeth, backbone_teeth_featmap ,backbone_eyebrows, backbone_eyebrows_featmap,
+        x,model,history, model_config

@@ -123,6 +123,8 @@ class DataPreparer:
             os.path.join(config.scaler_path, main_label + config.scaler_extension)
         )
         joblib.dump(scaler, output_scaler_path)
+        del config, big_data, idx, label, position, trial,filepath,raw_data_filepath,roi_filepath, 
+        output_scaler_path,data_df,label_df,filtered_df,data,filters,col,scaler
 
     def fitting_scaler_for_left(self):
         self.preparing_scaler('left')
