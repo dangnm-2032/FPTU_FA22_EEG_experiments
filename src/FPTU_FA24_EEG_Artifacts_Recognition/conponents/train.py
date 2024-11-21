@@ -39,6 +39,10 @@ class Trainer:
 
     def load_data(self):
         dataset_config = self.config.get_dataset_config()
+        if dataset_config.skip_preprocess_data:
+            return
+        
+        dataset_config = self.config.get_dataset_config()
         self.data = {}
         for label in dataset_config.label:
             files = []

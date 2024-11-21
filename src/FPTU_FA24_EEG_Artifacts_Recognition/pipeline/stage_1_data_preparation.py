@@ -3,9 +3,14 @@ from FPTU_FA24_EEG_Artifacts_Recognition.config import ConfigurationManager
 
 class DataPreparationPipeline:
     def __init__(self, configuration_manager: ConfigurationManager) -> None:
+        self.config = configuration_manager
         self.data_preparer = DataPreparer(configuration_manager)
 
     def main(self):
+        dataset_config = self.config.get_dataset_config()
+        if dataset_config.skip_preprocess_data:
+            return
+        
         # Check if raw data are enough as config, as well as theirs ROI
         self.data_preparer.raw_data_validation()
 
