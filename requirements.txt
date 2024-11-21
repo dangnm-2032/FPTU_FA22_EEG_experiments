@@ -1,0 +1,14 @@
+PyYAML
+setuptools
+ensure
+python_box
+scipy
+scikit-learn
+scikit-image
+muselsl
+pyserial
+tensorflow[and-cuda]
+PySimpleGUI
+datasets
+PyWavelets
+-e .

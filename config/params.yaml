@@ -1,0 +1,55 @@
+eeg_model:
+  eyebrows:
+    nb_classes: 1 
+    Chans: 4
+    Samples: 64
+    dropoutRate: 0.5
+    kernLength: 32
+    F1: 64
+    D: 5
+    F2: 64
+    dropoutType: 'Dropout'
+  left:
+    nb_classes: 1 
+    Chans: 4
+    Samples: 64
+    dropoutRate: 0.5
+    kernLength: 32
+    F1: 64
+    D: 5
+    F2: 64
+    dropoutType: 'Dropout'
+  right:
+    nb_classes: 1 
+    Chans: 4
+    Samples: 64
+    dropoutRate: 0.5
+    kernLength: 32
+    F1: 64
+    D: 5
+    F2: 64
+    dropoutType: 'Dropout'
+  both:
+    nb_classes: 1 
+    Chans: 4
+    Samples: 64
+    dropoutRate: 0.5
+    kernLength: 32
+    F1: 64
+    D: 5
+    F2: 64
+    dropoutType: 'Dropout'
+  teeth:
+    nb_classes: 1 
+    Chans: 4
+    Samples: 64
+    dropoutRate: 0.5
+    kernLength: 32
+    F1: 64
+    D: 5
+    F2: 64
+    dropoutType: 'Dropout'
+  training:
+    learning_rate: 0.001
+    batch_size: 32
+    epochs: 150

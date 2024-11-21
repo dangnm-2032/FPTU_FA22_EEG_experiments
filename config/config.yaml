@@ -1,0 +1,23 @@
+dataset:
+  # Change this to true if in the previous you did the preprocess
+  skip_preprocess_data: true
+  # Do not change below
+  raw_data_path: 'artifacts/raw_data'
+  raw_roi_path: 'artifacts/roi_data'
+  output_data_path: 'artifacts/transform_data'
+  output_roi_path: 'artifacts/transform_roi_data'
+  label: ['eyebrows', 'left', 'right', 'both', 'teeth']
+  filepath_format: '{subject_id}/{label}/{position}_{trial}.csv'
+  scaler_path: 'artifacts/checkpoints/scaler'
+  scaler_extension: '.save'
+  save_test_data: 'artifacts/test_data'
+
+eeg_model:
+  # You can change 
+  save_name: 'exp3'
+  inference_model: '' # Here you choose the checkpoint you want to run app
+  # Do not change
+  save_path: 'artifacts/checkpoints/model'
+  weight_extension: '.keras'
+  config_extension: '.yaml'
+  history_extension: '.history'
