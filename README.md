@@ -13,7 +13,7 @@ But I can help you in control a robot car with facial movements!
 ### Installation
 1. Clone this repo to your local machine.
 2. Create virtual environment with **Python 3.10.14**.
-3. `pip install -r requirements.txt`
+3. `pip install -r requirements_app.txt` or `pip install -r requirement_dev.txt` whether you want to training or just run the app.
 4. Download dataset and extract it here, it need to be an `artifacts` folder has the same level with this README.md.
 
 ### Training
