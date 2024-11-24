@@ -3,6 +3,7 @@ from datasets import Dataset
 import pandas as pd
 import time
 import tensorflow as tf
+import numpy as np
 
 def run_data_process(
         data, 
@@ -75,10 +76,16 @@ def get_backbone_and_feature_map(
     return model, feature_map
 
 def transform_data(ds):
-    ds['eyebrows'] = tf.expand_dims(tf.transpose(ds['eyebrows'], (1, 0)), -1)
-    ds['left'] = tf.expand_dims(tf.transpose(ds['left'], (1, 0)), -1)
-    ds['right'] = tf.expand_dims(tf.transpose(ds['right'], (1, 0)), -1)
-    ds['both'] = tf.expand_dims(tf.transpose(ds['both'], (1, 0)), -1)
-    ds['teeth'] = tf.expand_dims(tf.transpose(ds['teeth'], (1, 0)), -1)
+    # ds['eyebrows'] = tf.expand_dims(tf.transpose(ds['eyebrows'], (1, 0)), -1)
+    # ds['left'] = tf.expand_dims(tf.transpose(ds['left'], (1, 0)), -1)
+    # ds['right'] = tf.expand_dims(tf.transpose(ds['right'], (1, 0)), -1)
+    # ds['both'] = tf.expand_dims(tf.transpose(ds['both'], (1, 0)), -1)
+    # ds['teeth'] = tf.expand_dims(tf.transpose(ds['teeth'], (1, 0)), -1)
+    
+    ds['eyebrows'] = np.expand_dims(np.transpose(ds['eyebrows'], (1, 0)), -1)
+    ds['left'] = np.expand_dims(np.transpose(ds['left'], (1, 0)), -1)
+    ds['right'] = np.expand_dims(np.transpose(ds['right'], (1, 0)), -1)
+    ds['both'] = np.expand_dims(np.transpose(ds['both'], (1, 0)), -1)
+    ds['teeth'] = np.expand_dims(np.transpose(ds['teeth'], (1, 0)), -1)
     
     return ds

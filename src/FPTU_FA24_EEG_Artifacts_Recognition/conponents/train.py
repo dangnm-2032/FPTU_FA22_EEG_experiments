@@ -110,7 +110,7 @@ class Trainer:
             ds = datasets.Dataset.load_from_disk(Path(os.path.join(
                 dataset_config.output_data_path, label
             )))
-            ds.set_format('tf')
+            ds.set_format('numpy')
             ds = ds.map(transform_data)
             
             big_df[label] = ds
