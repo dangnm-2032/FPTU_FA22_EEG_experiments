@@ -14,7 +14,7 @@ dataset:
 
 eeg_model:
   # You can change 
-  save_name: 'exp3'
+  save_name: 'exp5'
   inference_model: '' # Here you choose the checkpoint you want to run app
   # Do not change
   save_path: 'artifacts/checkpoints/model'

@@ -1,0 +1,15 @@
+tensorflow
+pyserial
+PySimpleGUI
+matplotlib
+muselsl
+numpy
+PyYAML
+python_box
+ensure
+setuptools
+scipy
+scikit-learn
+scikit-image
+PyWavelets
+-e .
