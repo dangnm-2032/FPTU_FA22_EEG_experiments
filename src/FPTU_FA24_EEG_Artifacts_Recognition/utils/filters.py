@@ -57,8 +57,8 @@ def filter_eyebrows(x,param=[11,3,12]):
     x = butter_bandpass_filter(x, 0.1, 10, 256, 3)
     x = butter_bandpass_filter(x, 0.1, 10, 256, 3)
 
-    x= Implement_Notch_Filter(None, band=10, freq=18, ripple=100, order=2, filter_type='butter', data=x)
-    x= Implement_Notch_Filter(None, band=10, freq=20, ripple=100, order=2, filter_type='butter', data=x)
+    # x= Implement_Notch_Filter(None, band=10, freq=18, ripple=100, order=2, filter_type='butter', data=x)
+    # x= Implement_Notch_Filter(None, band=10, freq=20, ripple=100, order=2, filter_type='butter', data=x)
 
     x = savgol_filter(x, 3, 2)
     x = denoise_wavelet(x,method='BayesShrink',mode='soft',wavelet='sym9',wavelet_levels=5,rescale_sigma=True)
@@ -71,8 +71,8 @@ def filter_right(x):
     x = butter_bandpass_filter(x, 0.1, 10, 256, 3)
     x = butter_bandpass_filter(x, 0.1, 10, 256, 3)
 
-    x= Implement_Notch_Filter(None, band=10, freq=18, ripple=100, order=2, filter_type='butter', data=x)
-    x= Implement_Notch_Filter(None, band=10, freq=20, ripple=100, order=2, filter_type='butter', data=x)
+    # x= Implement_Notch_Filter(None, band=10, freq=18, ripple=100, order=2, filter_type='butter', data=x)
+    # x= Implement_Notch_Filter(None, band=10, freq=20, ripple=100, order=2, filter_type='butter', data=x)
 
     x = savgol_filter(x, 3, 2)
     x = denoise_wavelet(x,method='BayesShrink',mode='soft',wavelet='sym9',wavelet_levels=5,rescale_sigma=True)
@@ -85,8 +85,8 @@ def filter_left(x):
     x = butter_bandpass_filter(x, 0.1, 10, 256, 3)
     x = butter_bandpass_filter(x, 0.1, 10, 256, 3)
 
-    x = Implement_Notch_Filter(None, band=10, freq=18, ripple=100, order=2, filter_type='butter', data=x)
-    x = Implement_Notch_Filter(None, band=10, freq=20, ripple=100, order=2, filter_type='butter', data=x)
+    # x = Implement_Notch_Filter(None, band=10, freq=18, ripple=100, order=2, filter_type='butter', data=x)
+    # x = Implement_Notch_Filter(None, band=10, freq=20, ripple=100, order=2, filter_type='butter', data=x)
 
     x = savgol_filter(x, 3, 2)
     x = denoise_wavelet(x,method='BayesShrink',mode='soft',wavelet='sym9',wavelet_levels=5,rescale_sigma=True)
